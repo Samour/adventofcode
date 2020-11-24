@@ -1,0 +1,3 @@
+implementation: prob1
+data_file: data.txt
+consider_fuel_weight: true
