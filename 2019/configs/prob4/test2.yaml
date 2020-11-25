@@ -1,0 +1,4 @@
+implementation: prob4
+lower: 223450
+upper: 223450
+double_digits_isolated: false

@@ -1,0 +1,5 @@
+implementation: prob4
+lower: 234000
+upper: 234600
+double_digits_isolated: true
+debug: true
