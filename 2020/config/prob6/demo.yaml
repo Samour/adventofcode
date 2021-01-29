@@ -1,0 +1,4 @@
+impl: prob6
+check_type: all
+debug: false
+data: demo.txt
