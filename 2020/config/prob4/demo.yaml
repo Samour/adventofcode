@@ -1,0 +1,47 @@
+impl: prob4
+data: all_valid.txt
+debug: true
+required_fields:
+  - name: byr
+    validator:
+      impl: RangeValidator
+      params:
+        min: 1920
+        max: 2002
+  - name: iyr
+    validator:
+      impl: RangeValidator
+      params:
+        min: 2010
+        max: 2020
+  - name: eyr
+    validator:
+      impl: RangeValidator
+      params:
+        min: 2020
+        max: 2030
+  - name: hgt
+    validator:
+      impl: TypedRangeValidator
+      params:
+        cm:
+          min: 150
+          max: 193
+        in:
+          min: 59
+          max: 76
+  - name: hcl
+    validator:
+      impl: RegexValidator
+      params:
+        exp: \#[0-9a-f]{6}
+  - name: ecl
+    validator:
+      impl: RegexValidator
+      params:
+        exp: (amb|blu|brn|gry|grn|hzl|oth)
+  - name: pid
+    validator:
+      impl: RegexValidator
+      params:
+        exp: \d{9}
