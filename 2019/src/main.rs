@@ -2,10 +2,12 @@ use serde::Deserialize;
 
 mod args;
 mod config;
+mod intcode;
 mod prob1;
 mod prob2;
 mod prob3;
 mod prob4;
+mod prob5;
 
 #[derive(Deserialize)]
 struct Config {
@@ -18,6 +20,7 @@ fn select_impl(name: &str) -> Option<fn(factory: config::ContextFactory) -> Resu
         "prob2" => Some(prob2::main),
         "prob3" => Some(prob3::main),
         "prob4" => Some(prob4::main),
+        "prob5" => Some(prob5::main),
         _ => None,
     }
 }
