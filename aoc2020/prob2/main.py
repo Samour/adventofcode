@@ -1,4 +1,6 @@
+from typing import cast
 import re
+from aoc2020.utils import Resources
 
 
 policy_format = re.compile(r'(\d+)-(\d+) (\w)')
@@ -47,7 +49,7 @@ class PasswordEntry:
     return self.policy.validate(self.password)
 
 
-def policy_selector(policy_type: str, subject: str, low: int, high: str) -> IPasswordPolicy:
+def policy_selector(policy_type: str, subject: str, low: int, high: int) -> IPasswordPolicy:
   if policy_type == 'PasswordCountPolicy':
     return PasswordCountPolicy(subject, low, high)
   elif policy_type == 'PasswordPositionPolicy':
@@ -57,7 +59,7 @@ def policy_selector(policy_type: str, subject: str, low: int, high: str) -> IPas
 
 
 def parse_policy(policy_type: str, policy: str) -> IPasswordPolicy:
-  res = policy_format.match(policy)
+  res = cast(re.Match[str], policy_format.match(policy))
   return policy_selector(policy_type, res[3], int(res[1]), int(res[2]))
 
 
@@ -68,11 +70,11 @@ def parse_entry(policy_type: str, entry: str) -> PasswordEntry:
   return PasswordEntry(policy, parts[1].strip())
 
 
-def main(config: dict) -> int:
-  policy_type = config['policy_type']
+def main(resources: Resources) -> int:
+  policy_type = resources.config['policy_type']
   valid_c = 0
-  debug = config.get('debug', False)
-  for password in config['passwords']:
+  debug = resources.config.get('debug', False)
+  for password in resources.config['passwords']:
     entry = parse_entry(policy_type, password)
     valid = entry.validate()
     if valid:

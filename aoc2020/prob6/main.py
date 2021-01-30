@@ -1,10 +1,10 @@
-from typing import Optional, Any
-from utils import Resources
+from typing import Optional, Any, List
+from aoc2020.utils import Resources
 
 
 class GroupAnswers:
 
-  def __init__(self, answers: list[str], debug: bool):
+  def __init__(self, answers: List[str], debug: bool):
     self._answers = answers
     self._debug = debug
 
@@ -36,18 +36,18 @@ class GroupAnswers:
 
 class GroupFeeder:
 
-  def __init__(self, data: list[str], debug: bool):
+  def __init__(self, data: List[str], debug: bool):
     self._data = data
     self._i = 0
     self._debug = debug
 
-  def _get_line(self):
+  def _get_line(self) -> str:
     return self._data[self._i].strip()
 
   def get_next_group(self) -> Optional[GroupAnswers]:
     if self._i >= len(self._data):
       return None
-    answers = []
+    answers: List[str] = []
     while not len(answers) or len(self._get_line()):
       if len(self._get_line()):
         answers.append(self._get_line())

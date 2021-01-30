@@ -1,8 +1,9 @@
-from typing import Optional, Iterable
+from typing import Optional, Iterable, List
+from aoc2020.utils import Resources
 
 class ValuesIterator:
 
-  def __init__(self, values: list[int], select_c: int):
+  def __init__(self, values: List[int], select_c: int):
     self._values = values
     self._select_c = select_c
     self._idx = [ i for i in range(select_c) ]
@@ -23,7 +24,7 @@ class ValuesIterator:
     for i in range(idx, self._select_c):
       self._idx[i] = self._idx[i - 1] + 1
 
-  def __next__(self) -> list[int]:
+  def __next__(self) -> List[int]:
     self._validate_idx()
     value = [ self._values[i] for i in self._idx ]
     self._progress_idx()
@@ -33,7 +34,7 @@ class ValuesIterator:
 
 class ValuesIterable:
 
-  def __init__(self, values: list[int], select_c: int):
+  def __init__(self, values: List[int], select_c: int):
     self._values = values
     self._select_c = select_c
 
@@ -49,10 +50,10 @@ def mult(values: Iterable[int]) -> int:
   return result
 
 
-def main(config: dict) -> int:
-  target = config['target']
-  inputs = config['inputs']
-  select_c = config['select_count']
+def main(resources: Resources) -> int:
+  target = resources.config['target']
+  inputs = resources.config['inputs']
+  select_c = resources.config['select_count']
   for values in ValuesIterable(inputs, select_c):
     if sum(values) == target:
       print('Found solution with values {}'.format(values))

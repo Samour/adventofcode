@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 
+from typing import Callable, Dict
 import sys
-import utils
-from prob1.main import main as prob1
-from prob2.main import main as prob2
-from prob3.main import main as prob3
-from prob4.main import main as prob4
-from prob5.main import main as prob5
-from prob6.main import main as prob6
-from prob7.main import main as prob7
-from prob8.main import main as prob8
+import aoc2020.utils as utils
+from aoc2020.prob1.main import main as prob1
+from aoc2020.prob2.main import main as prob2
+from aoc2020.prob3.main import main as prob3
+from aoc2020.prob4.main import main as prob4
+from aoc2020.prob5.main import main as prob5
+from aoc2020.prob6.main import main as prob6
+from aoc2020.prob7.main import main as prob7
+from aoc2020.prob8.main import main as prob8
 
 def run() -> int:
   fname = sys.argv[1]
 
-  impl_map = {
+  impl_map: Dict[str, Callable[[utils.Resources], int]] = {
     'prob1': prob1,
     'prob2': prob2,
     'prob3': prob3,

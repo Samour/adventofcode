@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, List, Dict
 import re
-from utils import Resources
+from aoc2020.utils import Resources
 
 
 FIELD_SEP = ' '
@@ -21,7 +21,7 @@ class PassportData:
 
 class BatchParser:
 
-  def __init__(self, src_data: list[str]):
+  def __init__(self, src_data: List[str]):
     self._src_data = src_data
     self._i = 0
 
@@ -72,7 +72,7 @@ class RangeValidator(IFieldValidator):
 
 class TypedRangeValidator(IFieldValidator):
 
-  def __init__(self, name: str, type_ranges: dict[str, RangeValidator]):
+  def __init__(self, name: str, type_ranges: Dict[str, RangeValidator]):
     self._name = name
     self._type_ranges = type_ranges
     self._regex = re.compile(r'(\d+)(\w+)')
@@ -105,7 +105,7 @@ class RegexValidator(IFieldValidator):
 
 class PassportValidator:
 
-  def __init__(self, required_fields: list[IFieldValidator], debug: bool):
+  def __init__(self, required_fields: List[IFieldValidator], debug: bool):
     self._required_fields = required_fields
     self._debug = debug
 

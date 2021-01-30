@@ -1,5 +1,5 @@
-from typing import Optional
-from utils import Resources
+from typing import cast, Optional, Tuple, Dict, List, Set
+from aoc2020.utils import Resources
 
 
 class IInterpreter:
@@ -57,14 +57,14 @@ class NoopInstruction(IInstruction):
     runtime.inc_ip(1)
 
 
-def parse_instruction(instruction: str) -> tuple[str, int]:
+def parse_instruction(instruction: str) -> Tuple[str, int]:
   parts = instruction.split(' ')
   return parts[0].strip(), int(parts[1])
 
 
 class InterpreterRuntime(IInterpreter):
 
-  def __init__(self, instruction_set: dict[str, IInstruction], observer: Optional[IRuntimeObserver], text: list[str]):
+  def __init__(self, instruction_set: Dict[str, IInstruction], observer: Optional[IRuntimeObserver], text: List[str]):
     self._instruction_set = instruction_set
     self._observer = observer
     self._text = text
@@ -117,7 +117,7 @@ instruction_set = {
 
 class ChainObserver(IRuntimeObserver):
 
-  def __init__(self, observers: list[IRuntimeObserver]):
+  def __init__(self, observers: List[IRuntimeObserver]):
     self._observers = observers
 
   def post_instruction(self, runtime: IInterpreter, instruction: str) -> None:
@@ -142,7 +142,7 @@ class TracingObserver(IRuntimeObserver):
 class RecursionObserver(IRuntimeObserver):
 
   def __init__(self, silent: bool):
-    self._encountered_positions = set()
+    self._encountered_positions: Set[int] = set()
     self._silent = silent
 
   def post_instruction(self, runtime: IInterpreter, instruction: str) -> None:
@@ -165,20 +165,23 @@ def observer_factory(name: str) -> Optional[IRuntimeObserver]:
     return None
 
 
-def build_observers(names: list[str]) -> Optional[IRuntimeObserver]:
+def build_observers(names: Optional[List[str]]) -> Optional[IRuntimeObserver]:
   if not names or len(names) == 0:
     return None
   elif len(names) == 1:
     return observer_factory(names[0])
 
-  observers = list(filter(
-    lambda o: o is not None,
-    map(observer_factory, names)
+  observers = list(map(
+    lambda o: cast(IRuntimeObserver, o),
+    filter(
+      lambda o: o is not None,
+      map(observer_factory, names)
+    )
   ))
   return ChainObserver(observers)
 
 
-def execute_instructions(instructions: list[str], observers: Optional[list[str]]) -> IInterpreter:
+def execute_instructions(instructions: List[str], observers: Optional[List[str]]) -> IInterpreter:
   observer = build_observers(observers)
   runtime = InterpreterRuntime(instruction_set, observer, instructions)
 
@@ -186,7 +189,7 @@ def execute_instructions(instructions: list[str], observers: Optional[list[str]]
   return runtime
 
 
-def run_until_recursion(instructions: list[str], observers: Optional[list[str]]) -> None:
+def run_until_recursion(instructions: List[str], observers: Optional[List[str]]) -> None:
   runtime = execute_instructions(instructions, observers)
   print('Accumulator value: {}'.format(runtime.get_acc()))
 
@@ -203,7 +206,7 @@ def flip_instruction(instruction: str) -> Optional[str]:
   return '{} {}'.format(translations[opcode], arg)
 
 
-def gen_alt_text(instructions: list[str], target: int) -> Optional[list[str]]:
+def gen_alt_text(instructions: List[str], target: int) -> Optional[List[str]]:
   alt_instr = flip_instruction(instructions[target])
   if alt_instr is None:
     return None
@@ -218,7 +221,7 @@ def gen_alt_text(instructions: list[str], target: int) -> Optional[list[str]]:
   return alt_text
 
 
-def permute_instructions(instructions: list[str], observers: Optional[list[str]]) -> None:
+def permute_instructions(instructions: List[str], observers: Optional[List[str]]) -> None:
   for i in range(len(instructions)):
     alt_text = gen_alt_text(instructions, i)
     if alt_text is None:
@@ -248,3 +251,5 @@ def main(resources: Resources) -> int:
   ))
 
   analyses[resources.config['analysis']](instructions, resources.config.get('observers'))
+
+  return 0

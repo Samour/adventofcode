@@ -1,3 +1,4 @@
+from typing import List
 import os.path
 import yaml
 
@@ -7,7 +8,7 @@ class Resources:
     self.config = config
     self._resource_dir = resource_dir
 
-  def read_resource(self, r_name: str) -> list[str]:
+  def read_resource(self, r_name: str) -> List[str]:
     with open(os.path.join(self._resource_dir, r_name)) as fh:
       return fh.readlines()
 

@@ -1,4 +1,5 @@
-from utils import Resources
+from typing import List
+from aoc2020.utils import Resources
 
 
 HIGH_CHAR = {'B', 'R'}
@@ -20,17 +21,17 @@ class SeatIdentifier:
     return int(b_val, 2)
 
 
-def output_all(identifiers: list[SeatIdentifier]) -> None:
+def output_all(identifiers: List[SeatIdentifier]) -> None:
   for identifier in identifiers:
     print('{}: {}'.format(identifier.src, identifier.get_seat_id()))
 
 
-def output_max(identifiers: list[SeatIdentifier]) -> None:
+def output_max(identifiers: List[SeatIdentifier]) -> None:
   max_id = max(map(lambda i: i.get_seat_id(), identifiers))
   print('Highest seat ID: {}'.format(max_id))
 
 
-def output_missing(identifiers: list[SeatIdentifier]) -> None:
+def output_missing(identifiers: List[SeatIdentifier]) -> None:
   all_ids = { i.get_seat_id() for i in identifiers }
   for i in range(min(all_ids), max(all_ids)):
     if i not in all_ids:

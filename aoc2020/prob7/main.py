@@ -1,6 +1,6 @@
 import re
-from typing import Match, Optional
-from utils import Resources
+from typing import cast, Match, Optional, List, Dict, Set
+from aoc2020.utils import Resources
 
 
 content_regex = re.compile(r'^([\w ]+) bags contain (\d+ [\w ]+ bags?(, \d+ [\w ]+ bags?)*).')
@@ -17,11 +17,11 @@ class BagCount:
 
 class ContentsRule:
 
-  def __init__(self, colour: str, counts: list[BagCount]):
+  def __init__(self, colour: str, counts: List[BagCount]):
     self.colour = colour
     self.counts = counts
 
-  def count_bags_inside(self, bag_graph: dict[str, 'ContentsRule']) -> int:
+  def count_bags_inside(self, bag_graph: Dict[str, 'ContentsRule']) -> int:
     bag_c = 0
     for count in self.counts:
       bag_c += (1 + bag_graph[count.colour].count_bags_inside(bag_graph)) * count.count
@@ -32,8 +32,8 @@ class ContentsRule:
 class BagGraph:
 
   def __init__(self):
-    self.colours: dict[str, ContentsRule] = {}
-    self.contained_by: dict[str, set[str]] = {}
+    self.colours: Dict[str, ContentsRule] = {}
+    self.contained_by: Dict[str, Set[str]] = {}
 
   def _add_reverse(self, container: str, containing: str) -> None:
     if containing not in self.contained_by:
@@ -56,7 +56,7 @@ def parse_content_rule(match: Match) -> ContentsRule:
     list(map(
       lambda m: BagCount(m[2].strip(), int(m[1])),
       map(
-        lambda c: constraint_regex.match(c),
+        lambda c: cast(re.Match[str], constraint_regex.match(c)),
         bag_parts
       )
     ))
@@ -74,7 +74,7 @@ def parse_rule(rule: str) -> Optional[ContentsRule]:
   return None
 
 
-def build_graph(rules: list[ContentsRule]) -> BagGraph:
+def build_graph(rules: List[ContentsRule]) -> BagGraph:
   graph = BagGraph()
   for rule in rules:
     graph.add_to_graph(rule)
@@ -82,7 +82,7 @@ def build_graph(rules: list[ContentsRule]) -> BagGraph:
   return graph
 
 
-def output_all_colours(rules: list[ContentsRule], params: dict) -> None:
+def output_all_colours(rules: List[ContentsRule], params: dict) -> None:
   colours = set()
   for rule in rules:
     colours.add(rule.colour)
@@ -93,7 +93,7 @@ def output_all_colours(rules: list[ContentsRule], params: dict) -> None:
     print(c)
 
 
-def output_possible_containers(rules: list[ContentsRule], params: dict) -> None:
+def output_possible_containers(rules: List[ContentsRule], params: dict) -> None:
   graph = build_graph(rules)
   containers = set()
   get_containers = [params['target']]
@@ -106,7 +106,7 @@ def output_possible_containers(rules: list[ContentsRule], params: dict) -> None:
   print(len(containers))
 
 
-def output_count_containing(rules: list[ContentsRule], params: dict) -> None:
+def output_count_containing(rules: List[ContentsRule], params: dict) -> None:
   graph = build_graph(rules)
   target = params['target']
   count = graph.count_bags_in_target(target)
@@ -121,9 +121,14 @@ output_strategy = {
 
 
 def main(resources: Resources) -> int:
-  rules = list(filter(
-    lambda r: r is not None,
-    map(parse_rule, resources.read_resource(resources.config['data']))
+  rules = list(map(
+    lambda r: cast(ContentsRule, r),
+    filter(
+      lambda r: r is not None,
+      map(parse_rule, resources.read_resource(resources.config['data']))
+    )
   ))
 
   output_strategy[resources.config['output']](rules, resources.config.get('params', {}))
+
+  return 0

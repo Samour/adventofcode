@@ -1,4 +1,5 @@
-from utils import Resources
+from typing import List
+from aoc2020.utils import Resources
 
 
 TREE_CELL = '#'
@@ -7,9 +8,9 @@ TREE_CELL = '#'
 class Map:
 
   def __init__(self):
-    self._cells: list[list[str]] = []
+    self._cells: List[List[str]] = []
 
-  def parse(self, map_lines: list[str]) -> None:
+  def parse(self, map_lines: List[str]) -> None:
     self._cells = [ list(s.strip()) for s in map_lines ]
 
   def get_cell(self, x: int, y: int) -> str:
