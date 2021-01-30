@@ -1,0 +1,3 @@
+impl: prob10
+output: count_arrangements
+data: demo2.txt
