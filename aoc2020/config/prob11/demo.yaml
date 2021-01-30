@@ -1,0 +1,6 @@
+impl: prob11
+output: count_stable
+map: demo.map
+game_params:
+  counting_strategy: line_of_sight
+  max_seats: 5
