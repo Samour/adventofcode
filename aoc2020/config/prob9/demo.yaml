@@ -1,0 +1,4 @@
+impl: prob9
+output: contiguous_sum
+scan_length: 5
+numbers_file: demo.txt
