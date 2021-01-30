@@ -1,0 +1,6 @@
+impl: prob12
+instructions: main.txt
+strategy: waypoint
+waypoint:
+  init_x: 10
+  init_y: 1
