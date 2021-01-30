@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from typing import Callable, Dict
 import sys
 import aoc2020.utils as utils
@@ -12,7 +10,7 @@ from aoc2020.prob6.main import main as prob6
 from aoc2020.prob7.main import main as prob7
 from aoc2020.prob8.main import main as prob8
 
-def run() -> int:
+def main() -> int:
   fname = sys.argv[1]
 
   impl_map: Dict[str, Callable[[utils.Resources], int]] = {
@@ -45,5 +43,5 @@ def run() -> int:
   return impl(resources)
 
 if __name__ == '__main__':
-  result = run()
+  result = main()
   sys.exit(result)
