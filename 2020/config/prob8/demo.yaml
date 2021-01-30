@@ -1,0 +1,5 @@
+impl: prob8
+instructions: demo
+analysis: permute_instructions
+observers:
+  - recursion::silent
