@@ -1,0 +1,5 @@
+impl: prob7
+output: count_containing
+params:
+  target: shiny gold
+data: main.txt

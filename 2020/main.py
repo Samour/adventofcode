@@ -8,6 +8,7 @@ from prob3.main import main as prob3
 from prob4.main import main as prob4
 from prob5.main import main as prob5
 from prob6.main import main as prob6
+from prob7.main import main as prob7
 
 def run() -> int:
   fname = sys.argv[1]
@@ -18,7 +19,8 @@ def run() -> int:
     'prob3': prob3,
     'prob4': prob4,
     'prob5': prob5,
-    'prob6': prob6
+    'prob6': prob6,
+    'prob7': prob7
   }
 
   try:
