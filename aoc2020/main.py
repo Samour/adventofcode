@@ -14,6 +14,7 @@ from aoc2020.prob10.main import main as prob10
 from aoc2020.prob11.main import main as prob11
 from aoc2020.prob12.main import main as prob12
 from aoc2020.prob13.main import main as prob13
+from aoc2020.prob14.main import main as prob14
 
 def main() -> int:
   fname = sys.argv[1]
@@ -31,7 +32,8 @@ def main() -> int:
     'prob10': prob10,
     'prob11': prob11,
     'prob12': prob12,
-    'prob13': prob13
+    'prob13': prob13,
+    'prob14': prob14
   }
 
   try:
