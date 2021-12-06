@@ -1,0 +1,4 @@
+implementation: day1
+mode: count_windowed_increases
+window_size: 3
+measurements_file: p1_sample1.txt

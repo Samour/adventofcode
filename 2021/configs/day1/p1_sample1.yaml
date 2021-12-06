@@ -1,0 +1,3 @@
+implementation: day1
+mode: count_increases
+measurements_file: p1_sample1.txt
