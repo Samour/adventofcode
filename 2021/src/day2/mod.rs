@@ -1,6 +1,9 @@
 mod position;
 
-use position::{Movement, MovementDirection, MovementStrategy, Position, SimpleMovementStrategy};
+use position::{
+  AimingMovementStrategy, Movement, MovementDirection, MovementStrategy, Position,
+  SimpleMovementStrategy,
+};
 
 use crate::config;
 
@@ -9,6 +12,7 @@ use std::vec::Vec;
 
 #[derive(Deserialize)]
 struct Config {
+  movement_strategy: String,
   directions_file: String,
 }
 
@@ -43,12 +47,16 @@ fn load_movements(raw_movements: Vec<&str>) -> Vec<Movement> {
     .collect()
 }
 
-fn select_strategy() -> Box<dyn MovementStrategy> {
-  Box::new(SimpleMovementStrategy::new())
+fn select_strategy(strategy_name: &str) -> Result<Box<dyn MovementStrategy>, String> {
+  match strategy_name {
+    "SimpleMovementStrategy" => Ok(Box::new(SimpleMovementStrategy::new())),
+    "AimingMovementStrategy" => Ok(Box::new(AimingMovementStrategy::new())),
+    _ => Err(String::from("Unrecognized movement strategy")),
+  }
 }
 
-fn compute_motion(movements: Vec<Movement>) {
-  let mut position = Position::new(select_strategy());
+fn compute_motion(movement_strategy: Box<dyn MovementStrategy>, movements: Vec<Movement>) {
+  let mut position = Position::new(movement_strategy);
   for movement in movements {
     position.apply_transition(movement);
   }
@@ -65,7 +73,8 @@ pub fn main(factory: config::ContextFactory) -> Result<(), String> {
   let file_contents = context.load_data(&context.config.directions_file)?;
   let raw_movements: Vec<&str> = file_contents.split("\n").collect();
   let movements = load_movements(raw_movements);
-  compute_motion(movements);
+  let movement_strategy = select_strategy(&context.config.movement_strategy)?;
+  compute_motion(movement_strategy, movements);
 
   Ok(())
 }
