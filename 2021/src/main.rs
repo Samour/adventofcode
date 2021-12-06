@@ -4,6 +4,7 @@ mod args;
 mod config;
 mod day1;
 mod day2;
+mod day3;
 
 #[derive(Deserialize)]
 struct Config {
@@ -14,6 +15,7 @@ fn select_impl(name: &str) -> Option<fn(factory: config::ContextFactory) -> Resu
     match name {
         "day1" => Some(day1::main),
         "day2" => Some(day2::main),
+        "day3" => Some(day3::main),
         _ => None,
     }
 }
