@@ -52,7 +52,7 @@ impl ValuesReducer for MostCommonBitReducer {
     let mut i: usize = 0;
     while counts.contains_key(&i) {
       let position_counts = counts.remove(&i).unwrap_or(CommonBitCounter::new());
-      if position_counts.count1 > position_counts.count0 {
+      if position_counts.count1 >= position_counts.count0 {
         result.push('1');
       } else {
         result.push('0');
