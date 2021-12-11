@@ -1,3 +1,4 @@
 implementation: day9
 map_file: data.txt
-mode: locate_min
+mode: locate_basins
+num_basins: 3
