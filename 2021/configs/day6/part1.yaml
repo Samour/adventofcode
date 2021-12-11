@@ -1,0 +1,3 @@
+implementation: day6
+school_file: data.txt
+simulate_generations: 80
