@@ -1,0 +1,7 @@
+implementation: day8
+data_file: data.txt
+filter_by_segment_count:
+  - 2
+  - 3
+  - 4
+  - 7
