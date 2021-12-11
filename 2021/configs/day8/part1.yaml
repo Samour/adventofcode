@@ -1,5 +1,6 @@
 implementation: day8
 data_file: data.txt
+mode: count_matching_filter
 filter_by_segment_count:
   - 2
   - 3
