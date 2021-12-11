@@ -1,0 +1,19 @@
+implementation: day8
+data_file: sample1.txt
+mode: derive_outputs
+canonical_digits:
+  0: abcefg
+  1: cf
+  2: acdeg
+  3: acdfg
+  4: bcdf
+  5: abdfg
+  6: abdefg
+  7: acf
+  8: abcdefg
+  9: abcdfg
+disabled_features:
+  # - FREQUENCY_ANALYSIS
+  # - SEGMENT_COUNT
+  # - OVERLAP_MAPPINGS
+  - SUBSET_CANDIDATES

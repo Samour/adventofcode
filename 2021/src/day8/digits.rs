@@ -2,11 +2,17 @@ use std::collections::HashSet;
 
 pub struct DigitalOutput {
   pub segments: HashSet<char>,
+  pub canonical: String,
 }
 
 impl DigitalOutput {
-  fn new(segments: HashSet<char>) -> DigitalOutput {
-    DigitalOutput { segments }
+  pub fn new(segments: HashSet<char>) -> DigitalOutput {
+    let mut sorted: Vec<char> = segments.iter().cloned().collect();
+    sorted.sort();
+    DigitalOutput {
+      segments,
+      canonical: sorted.iter().collect(),
+    }
   }
 }
 
