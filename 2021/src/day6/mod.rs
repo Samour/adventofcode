@@ -1,9 +1,10 @@
 use serde::Deserialize;
+use std::collections::HashMap;
 
 use crate::config::{Context, ContextFactory};
 
-const FISH_RECYCLE: i32 = 6;
-const FISH_FIRST_CYCLE: i32 = 8;
+const FISH_RECYCLE: i64 = 6;
+const FISH_FIRST_CYCLE: i64 = 8;
 
 #[derive(Deserialize)]
 struct Config {
@@ -11,48 +12,37 @@ struct Config {
   simulate_generations: i32,
 }
 
-struct LanternFish {
-  days_until_reproduction: i32,
-}
-
-impl LanternFish {
-  fn new(days_until_reproduction: i32) -> LanternFish {
-    LanternFish {
-      days_until_reproduction,
-    }
-  }
-
-  fn increment_day(&mut self) -> Option<LanternFish> {
-    if self.days_until_reproduction == 0 {
-      self.days_until_reproduction = FISH_RECYCLE;
-      Some(LanternFish::new(FISH_FIRST_CYCLE))
-    } else {
-      self.days_until_reproduction -= 1;
-      None
-    }
-  }
+fn increment_map(map: &mut HashMap<i64, i64>, key: i64, value: i64) {
+  let existing = map.remove(&key).unwrap_or(0);
+  map.insert(key, existing + value);
 }
 
 struct LanternSchool {
-  fish: Vec<LanternFish>,
+  fish: HashMap<i64, i64>,
 }
 
 impl LanternSchool {
-  fn new(fish: Vec<LanternFish>) -> LanternSchool {
-    LanternSchool { fish }
+  fn new(fish: Vec<i64>) -> LanternSchool {
+    let mut fish_map: HashMap<i64, i64> = HashMap::new();
+    for value in fish {
+      increment_map(&mut fish_map, value, 1)
+    }
+
+    LanternSchool { fish: fish_map }
   }
 
   fn increment_day(&mut self) {
-    let mut new_fish: Vec<LanternFish> = Vec::new();
-    for fish in &mut self.fish {
-      match fish.increment_day() {
-        Some(f) => new_fish.push(f),
-        _ => {}
+    let mut new_fish = HashMap::new();
+    for (&days, &count) in &self.fish {
+      if days == 0 {
+        increment_map(&mut new_fish, FISH_FIRST_CYCLE, count);
+        increment_map(&mut new_fish, FISH_RECYCLE, count);
+      } else {
+        increment_map(&mut new_fish, days - 1, count);
       }
     }
-    for fish in new_fish {
-      self.fish.push(fish);
-    }
+
+    self.fish = new_fish;
   }
 }
 
@@ -60,10 +50,9 @@ fn parse_school(raw_school: String) -> LanternSchool {
   LanternSchool::new(
     raw_school
       .split(",")
-      .map(|v| v.parse::<i32>())
+      .map(|v| v.parse::<i64>())
       .filter(|v| v.is_ok())
       .map(|v| v.unwrap())
-      .map(|v| LanternFish::new(v))
       .collect(),
   )
 }
@@ -73,7 +62,8 @@ fn execute_simulation(mut school: LanternSchool, generations: i32) {
     school.increment_day();
   }
 
-  println!("Number of fish: {}", school.fish.len());
+  let fish_count: i64 = school.fish.values().sum();
+  println!("Number of fish: {}", fish_count);
 }
 
 pub fn main(factory: ContextFactory) -> Result<(), String> {
