@@ -9,22 +9,42 @@ struct Config {
   trace_search: Option<bool>,
   data_file: String,
   search_method: String,
+  cost_method: String,
+}
+
+type CostMethodology = fn(original_position: i32, target_position: i32) -> i32;
+
+fn linear_cost(original_position: i32, target_position: i32) -> i32 {
+  (original_position - target_position).abs()
+}
+
+fn incremental_cost(original_position: i32, target_position: i32) -> i32 {
+  let lin_cost = linear_cost(original_position, target_position);
+  lin_cost * (lin_cost + 1) / 2
 }
 
 struct Crab {
   original_position: i32,
+  cost_methodology: CostMethodology,
 }
 
 impl Crab {
-  fn new(original_position: i32) -> Crab {
-    Crab { original_position }
+  fn new(original_position: i32, cost_methodology: CostMethodology) -> Crab {
+    Crab {
+      original_position,
+      cost_methodology,
+    }
+  }
+
+  fn compute_cost(&self, target_position: i32) -> i32 {
+    (self.cost_methodology)(self.original_position, target_position)
   }
 }
 
 fn compute_cost(population: &Vec<&Crab>, position: i32) -> i32 {
   let mut cost = 0;
   for crab in population {
-    cost += (crab.original_position - position).abs();
+    cost += crab.compute_cost(position);
   }
 
   cost
@@ -97,6 +117,12 @@ impl HillClimbAlg<'_> {
       mut expended_fuel,
     } = self.choose_direction(position);
     self.print_position(position, expended_fuel);
+    if direction == 0 {
+      return SearchOutcome {
+        position,
+        expended_fuel,
+      };
+    }
     let mut loop_count: i32 = 0;
     loop {
       if loop_count > LOOP_ESCAPE {
@@ -156,20 +182,31 @@ fn execute_search(crabs: Vec<Crab>, config: Config) -> Result<SearchOutcome, Str
   }
 }
 
-fn parse_crabs(raw_crabs: String) -> Vec<Crab> {
-  raw_crabs
-    .split(",")
-    .map(|v| v.parse::<i32>())
-    .filter(|v| v.is_ok())
-    .map(|v| v.unwrap())
-    .map(|v| Crab::new(v))
-    .collect()
+fn select_cost_method(cost_method: &str) -> Result<CostMethodology, String> {
+  match cost_method {
+    "linear" => Ok(linear_cost),
+    "incremental" => Ok(incremental_cost),
+    _ => Err(String::from("cost_method not recognised")),
+  }
+}
+
+fn parse_crabs(raw_crabs: String, cost_method: &str) -> Result<Vec<Crab>, String> {
+  let cost_methodology = select_cost_method(cost_method)?;
+  Ok(
+    raw_crabs
+      .split(",")
+      .map(|v| v.parse::<i32>())
+      .filter(|v| v.is_ok())
+      .map(|v| v.unwrap())
+      .map(|v| Crab::new(v, cost_methodology))
+      .collect(),
+  )
 }
 
 pub fn main(factory: ContextFactory) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.data_file)?;
-  let crabs = parse_crabs(raw_data);
+  let crabs = parse_crabs(raw_data, &context.config.cost_method)?;
   let outcome = execute_search(crabs, context.config)?;
 
   println!(

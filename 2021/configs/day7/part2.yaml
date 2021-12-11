@@ -2,4 +2,4 @@ implementation: day7
 data_file: data.txt
 trace_search: false
 search_method: hill_climb
-cost_method: linear
+cost_method: incremental

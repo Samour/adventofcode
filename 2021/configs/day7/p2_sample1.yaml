@@ -1,5 +1,5 @@
 implementation: day7
 data_file: sample1.txt
 trace_search: true
-search_method: exhaustive_search
-cost_method: linear
+search_method: hill_climb
+cost_method: incremental
