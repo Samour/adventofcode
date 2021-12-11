@@ -11,15 +11,18 @@ use parse::parse_lines;
 #[derive(Deserialize)]
 struct Config {
   data_file: String,
+  apply_filter: bool,
 }
 
-fn count_horiz_vert_intersections(lines: Vec<Line>) {
-  let filtered_lines: Vec<&Line> = lines
-    .iter()
+fn filter_for_vertical(lines: Vec<Line>) -> Vec<Line> {
+  lines
+    .into_iter()
     .filter(|l| l.start.x == l.end.x || l.start.y == l.end.y)
-    .collect();
+    .collect()
+}
 
-  let map_count = count_lines_at_points(filtered_lines);
+fn count_intersections(lines: Vec<Line>) {
+  let map_count = count_lines_at_points(lines.iter().collect());
   let mut intersection_count: i32 = 0;
   for &count in map_count.values() {
     if count > 1 {
@@ -35,7 +38,11 @@ pub fn main(factory: ContextFactory) -> Result<(), String> {
   let raw_lines = context.load_data(&context.config.data_file)?;
   let lines = parse_lines(raw_lines);
 
-  count_horiz_vert_intersections(lines);
+  count_intersections(if context.config.apply_filter {
+    filter_for_vertical(lines)
+  } else {
+    lines
+  });
 
   Ok(())
 }

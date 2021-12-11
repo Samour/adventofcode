@@ -1,3 +1,3 @@
 implementation: day5
 data_file: data.txt
-apply_filter: true
+apply_filter: false
