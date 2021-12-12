@@ -31,7 +31,7 @@ tests:
     expected_result: 22116
   - name: Day 6 Part 1 | Lanternfish (small)
     config: day6/part1.yaml
-    expected_result: 5934
+    expected_result: 371379
   - name: Day 6 Part 2 | Lanternfish (large)
     config: day6/part2.yaml
     expected_result: 1674303997472
