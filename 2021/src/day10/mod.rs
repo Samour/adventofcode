@@ -2,6 +2,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 const SYM_OPEN_A: char = '(';
 const SYM_OPEN_B: char = '[';
@@ -93,7 +94,7 @@ fn score_completion(
   Ok(result)
 }
 
-fn compute_checker_score(raw_input: String, config: Config) -> Result<(), String> {
+fn compute_checker_score(raw_input: String, config: Config, writer: &Writer) -> Result<(), String> {
   let mut result: i32 = 0;
   for line in raw_input.split("\n") {
     match parse_line(line)? {
@@ -105,12 +106,16 @@ fn compute_checker_score(raw_input: String, config: Config) -> Result<(), String
       _ => {}
     }
   }
-  println!("Checker score: {}", result);
+  writer.write(|| format!("Checker score: {}", result));
 
   Ok(())
 }
 
-fn compute_complete_score(raw_input: String, config: Config) -> Result<(), String> {
+fn compute_complete_score(
+  raw_input: String,
+  config: Config,
+  writer: &Writer,
+) -> Result<(), String> {
   let mut scores: Vec<i64> = Vec::new();
   for line in raw_input.split("\n") {
     match parse_line(line)? {
@@ -123,12 +128,12 @@ fn compute_complete_score(raw_input: String, config: Config) -> Result<(), Strin
   let mid_score = scores
     .get(scores.len() / 2)
     .ok_or(String::from("Error when obtaining middle element of list"))?;
-  println!("Autocomplete score: {}", mid_score);
+  writer.write(|| format!("Autocomplete score: {}", mid_score));
 
   Ok(())
 }
 
-fn select_mode(mode: &str) -> Result<fn(String, Config) -> Result<(), String>, String> {
+fn select_mode(mode: &str) -> Result<fn(String, Config, &Writer) -> Result<(), String>, String> {
   match mode {
     "checker_score" => Ok(compute_checker_score),
     "complete_score" => Ok(compute_complete_score),
@@ -136,8 +141,8 @@ fn select_mode(mode: &str) -> Result<fn(String, Config) -> Result<(), String>, S
   }
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.text_file)?;
-  select_mode(&context.config.mode)?(raw_data, context.config)
+  select_mode(&context.config.mode)?(raw_data, context.config, &writer)
 }

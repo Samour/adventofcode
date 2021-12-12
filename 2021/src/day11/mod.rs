@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 const MAX_LEVEL: i32 = 9;
 
@@ -145,7 +146,7 @@ fn parse_octo_field(raw_field: String) -> OctoField {
   OctoField::new(octopi)
 }
 
-fn count_flashes(mut octo_field: OctoField, config: Config) -> Result<(), String> {
+fn count_flashes(mut octo_field: OctoField, config: Config, writer: &Writer) -> Result<(), String> {
   let simulate_rounds = config
     .simulate_rounds
     .ok_or_else(|| String::from("simulate_rounds is required for this mode"))?;
@@ -153,15 +154,17 @@ fn count_flashes(mut octo_field: OctoField, config: Config) -> Result<(), String
     octo_field.execute_tick();
   }
 
-  println!(
-    "Total number of flashes after {} rounds: {}",
-    simulate_rounds, octo_field.flash_count,
-  );
+  writer.write(|| {
+    format!(
+      "Total number of flashes after {} rounds: {}",
+      simulate_rounds, octo_field.flash_count,
+    )
+  });
 
   Ok(())
 }
 
-fn find_all_flash(mut octo_field: OctoField) {
+fn find_all_flash(mut octo_field: OctoField, writer: &Writer) {
   let mut i: i32 = 0;
   loop {
     i += 1;
@@ -170,20 +173,20 @@ fn find_all_flash(mut octo_field: OctoField) {
     }
   }
 
-  println!("All flash at step {}", i);
+  writer.write(|| format!("All flash at step {}", i));
 }
 
-fn run_simulation(octo_field: OctoField, config: Config) -> Result<(), String> {
+fn run_simulation(octo_field: OctoField, config: Config, writer: &Writer) -> Result<(), String> {
   match config.mode.as_str() {
-    "count_flashes" => count_flashes(octo_field, config),
-    "find_all_flash" => Ok(find_all_flash(octo_field)),
+    "count_flashes" => count_flashes(octo_field, config, writer),
+    "find_all_flash" => Ok(find_all_flash(octo_field, writer)),
     _ => Err(String::from("mode not recognized")),
   }
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_field = context.load_data(&context.config.field_file)?;
   let octo_field = parse_octo_field(raw_field);
-  run_simulation(octo_field, context.config)
+  run_simulation(octo_field, context.config, &writer)
 }

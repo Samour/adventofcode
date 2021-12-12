@@ -2,6 +2,7 @@ use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 const NAME_START: &str = "start";
 const NAME_END: &str = "end";
@@ -68,19 +69,21 @@ impl PartialPath {
   }
 }
 
-struct GraphCrawl {
+struct GraphCrawl<'a> {
   edges: HashMap<String, Vec<String>>,
   paths: Vec<PartialPath>,
   paths_found: i32,
   debug: bool,
+  writer: &'a Writer,
 }
 
-impl GraphCrawl {
-  fn new(
+impl GraphCrawl<'_> {
+  fn new<'a>(
     edges: HashMap<String, Vec<String>>,
     permit_small_repeat: bool,
     debug: bool,
-  ) -> GraphCrawl {
+    writer: &'a Writer,
+  ) -> GraphCrawl<'a> {
     let initial_path = PartialPath {
       path: vec![String::from(NAME_START)],
       next_steps: edges.get(NAME_START).cloned().unwrap_or(vec![]),
@@ -91,6 +94,7 @@ impl GraphCrawl {
       paths: vec![initial_path],
       paths_found: 0,
       debug,
+      writer,
     }
   }
 
@@ -126,9 +130,9 @@ impl GraphCrawl {
       return;
     }
     for path in &self.paths {
-      println!("{}", path.debug_out());
+      self.writer.write(|| path.debug_out());
     }
-    println!();
+    self.writer.write(|| "");
   }
 }
 
@@ -143,7 +147,7 @@ fn push_edge(edges: &mut HashMap<String, Vec<String>>, node1: &str, node2: &str)
   push_directed_edge(edges, node2, node1);
 }
 
-fn parse_graph(raw_edges: String, config: &Config) -> GraphCrawl {
+fn parse_graph<'a>(raw_edges: String, config: &Config, writer: &'a Writer) -> GraphCrawl<'a> {
   let mut edges: HashMap<String, Vec<String>> = HashMap::new();
   for raw_edge in raw_edges.split("\n") {
     let parts: Vec<&str> = raw_edge.split("-").collect();
@@ -156,18 +160,19 @@ fn parse_graph(raw_edges: String, config: &Config) -> GraphCrawl {
     edges,
     config.permit_small_repeat,
     config.debug.unwrap_or(false),
+    writer,
   )
 }
 
-fn count_paths(mut graph_crawl: GraphCrawl) {
+fn count_paths(mut graph_crawl: GraphCrawl, writer: &Writer) {
   let paths = graph_crawl.search();
-  println!("Paths found: {}", paths);
+  writer.write(|| format!("Paths found: {}", paths));
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_edges = context.load_data(&context.config.edges_file)?;
-  let graph_crawl = parse_graph(raw_edges, &context.config);
-  count_paths(graph_crawl);
+  let graph_crawl = parse_graph(raw_edges, &context.config, &writer);
+  count_paths(graph_crawl, &writer);
   Ok(())
 }
