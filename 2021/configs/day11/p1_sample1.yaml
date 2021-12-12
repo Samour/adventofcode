@@ -1,0 +1,3 @@
+implementation: day11
+field_file: sample1.txt
+simulate_rounds: 100
