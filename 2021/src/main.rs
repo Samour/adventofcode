@@ -1,5 +1,3 @@
-#![allow(warnings)] 
-
 mod args;
 mod config;
 mod day1;

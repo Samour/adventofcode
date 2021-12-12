@@ -107,10 +107,24 @@ impl<'a> TestResultAggregator<'a> {
   }
 }
 
-fn run_test<'a>(config_fname: String, config: &'a TestCase) -> TestOutcome<'a> {
+fn run_test<'a>(
+  config_fname: String,
+  config: &'a TestCase,
+  enable_printing: bool,
+) -> TestOutcome<'a> {
+  let writer = if enable_printing {
+    println!("Starting test: {}", config.name);
+    Writer::StdoutWriter
+  } else {
+    Writer::NoopWriter
+  };
   let start = Instant::now();
-  let result = execute(config_fname, Writer::NoopWriter);
+  let result = execute(config_fname, writer);
   let time = start.elapsed().as_millis();
+  
+  if enable_printing {
+    println!();
+  }
 
   TestOutcome {
     config,
@@ -128,11 +142,18 @@ pub fn execute_tests(config_fname: String) -> Result<(), String> {
     .map(|c| c.show_errors)
     .flatten()
     .unwrap_or(false);
-  let mut results: TestResultAggregator = TestResultAggregator::new(true, show_errors);
+  let enable_printing = context
+    .config
+    .config
+    .as_ref()
+    .map(|c| c.enable_printing)
+    .flatten()
+    .unwrap_or(false);
+  let mut results: TestResultAggregator = TestResultAggregator::new(!enable_printing, show_errors);
   results.initialise();
   for suite in &context.config.tests {
     results.emit_result(match context.get_resource(&suite.config) {
-      Ok(suite_fname) => run_test(suite_fname, suite),
+      Ok(suite_fname) => run_test(suite_fname, suite, enable_printing),
       Err(e) => TestOutcome {
         config: suite,
         result: Err(e),
