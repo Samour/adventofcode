@@ -11,28 +11,62 @@ const NAME_END: &str = "end";
 struct Config {
   edges_file: String,
   permit_small_repeat: bool,
-  debug: Option<bool>,
+  use_cache: bool,
 }
 
 fn is_small_chamber(name: &String) -> bool {
   name.to_lowercase() == *name
 }
 
+// Represent a path [a, b, c] -> a-b;c
+// Final element of path will always appear after the semicolon
+// Elements before semicolon are filtered to include only small chambers & are sorted
+fn hash_path(path: &Vec<String>) -> String {
+  match path.get(path.len() - 1) {
+    Some(top_chamber) => {
+      let mut previous_small: Vec<String> = path
+        .iter()
+        .take(path.len() - 1)
+        .filter(|n| is_small_chamber(n))
+        .cloned()
+        .collect();
+      previous_small.sort();
+      format!("{};{}", previous_small.join("-"), top_chamber)
+    }
+    None => format!(""),
+  }
+}
+
 struct GraphCrawl {
   edges: HashMap<String, Vec<String>>,
   permit_small_repeat: bool,
+  use_cache: bool,
+  cached_paths: HashMap<String, i32>,
   // Cache
 }
 
 impl GraphCrawl {
-  fn new(edges: HashMap<String, Vec<String>>, permit_small_repeat: bool) -> GraphCrawl {
+  fn new(
+    edges: HashMap<String, Vec<String>>,
+    permit_small_repeat: bool,
+    use_cache: bool,
+  ) -> GraphCrawl {
     GraphCrawl {
       edges,
       permit_small_repeat,
+      use_cache,
+      cached_paths: HashMap::new(),
     }
   }
 
   fn count_paths_to_end(&mut self, partial: Vec<String>) -> i32 {
+    let path_hash = hash_path(&partial);
+    if self.use_cache {
+      match self.cached_paths.get(&path_hash) {
+        Some(&p) => return p,
+        None => {}
+      }
+    }
     let last_node = match partial.get(partial.len() - 1) {
       Some(n) => n,
       None => return 0,
@@ -62,6 +96,9 @@ impl GraphCrawl {
       result += self.count_paths_to_end(path);
     }
 
+    if self.use_cache {
+      self.cached_paths.insert(path_hash, result);
+    }
     result
   }
 }
@@ -86,7 +123,7 @@ fn parse_graph(raw_edges: String, config: &Config) -> GraphCrawl {
     }
   }
 
-  GraphCrawl::new(edges, config.permit_small_repeat)
+  GraphCrawl::new(edges, config.permit_small_repeat, config.use_cache)
 }
 
 fn count_paths(mut graph_crawl: GraphCrawl, writer: &Writer) -> i64 {

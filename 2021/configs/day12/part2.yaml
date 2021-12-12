@@ -1,3 +1,4 @@
 implementation: day12
 edges_file: data.txt
 permit_small_repeat: true
+use_cache: true

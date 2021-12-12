@@ -1,4 +1,4 @@
 implementation: day12
 edges_file: sample1.txt
 permit_small_repeat: false
-debug: true
+use_cache: true
