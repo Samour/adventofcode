@@ -2,6 +2,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 const FISH_RECYCLE: i64 = 6;
 const FISH_FIRST_CYCLE: i64 = 8;
@@ -57,20 +58,20 @@ fn parse_school(raw_school: String) -> LanternSchool {
   )
 }
 
-fn execute_simulation(mut school: LanternSchool, generations: i32) {
+fn execute_simulation(mut school: LanternSchool, generations: i32, writer: Writer) {
   for _ in 0..generations {
     school.increment_day();
   }
 
   let fish_count: i64 = school.fish.values().sum();
-  println!("Number of fish: {}", fish_count);
+  writer.write(|| format!("Number of fish: {}", fish_count));
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_school = context.load_data(&context.config.school_file)?;
   let school = parse_school(raw_school);
-  execute_simulation(school, context.config.simulate_generations);
+  execute_simulation(school, context.config.simulate_generations, writer);
 
   Ok(())
 }

@@ -2,6 +2,7 @@ use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 mod digits;
 mod solver;
@@ -18,7 +19,11 @@ struct Config {
   disabled_features: Option<Vec<String>>,
 }
 
-fn count_matching_filter(displays: Vec<DisplayAnalysis>, config: Config) -> Result<(), String> {
+fn count_matching_filter(
+  displays: Vec<DisplayAnalysis>,
+  config: Config,
+  writer: &Writer,
+) -> Result<(), String> {
   let filter_counts = config.filter_by_segment_count;
   if filter_counts.is_none() {
     return Err(String::from(
@@ -31,15 +36,21 @@ fn count_matching_filter(displays: Vec<DisplayAnalysis>, config: Config) -> Resu
     .flat_map(|d| d.final_output.iter())
     .filter(|d| filter_counts.contains(&d.segments.len()))
     .count();
-  println!(
-    "Outputs with the required number of enabled segments: {}",
-    count
-  );
+  writer.write(|| {
+    format!(
+      "Outputs with the required number of enabled segments: {}",
+      count
+    )
+  });
 
   Ok(())
 }
 
-fn derive_outputs(displays: Vec<DisplayAnalysis>, config: Config) -> Result<(), String> {
+fn derive_outputs(
+  displays: Vec<DisplayAnalysis>,
+  config: Config,
+  writer: &Writer,
+) -> Result<(), String> {
   let canonical_digits: HashMap<usize, DigitalOutput> = config
     .canonical_digits
     .ok_or(String::from(
@@ -59,14 +70,14 @@ fn derive_outputs(displays: Vec<DisplayAnalysis>, config: Config) -> Result<(), 
     total += solver.analyze_displays(display)?.extract_value()?;
   }
 
-  println!("Total of all outputs: {}", total);
+  writer.write(|| format!("Total of all outputs: {}", total));
 
   Ok(())
 }
 
 fn select_mode(
   mode: &str,
-) -> Result<fn(Vec<DisplayAnalysis>, Config) -> Result<(), String>, String> {
+) -> Result<fn(Vec<DisplayAnalysis>, Config, &Writer) -> Result<(), String>, String> {
   match mode {
     "count_matching_filter" => Ok(count_matching_filter),
     "derive_outputs" => Ok(derive_outputs),
@@ -74,9 +85,9 @@ fn select_mode(
   }
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.data_file)?;
   let displays = parse_displays(&raw_data);
-  select_mode(&context.config.mode)?(displays, context.config)
+  select_mode(&context.config.mode)?(displays, context.config, &writer)
 }

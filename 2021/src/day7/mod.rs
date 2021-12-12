@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 const LOOP_ESCAPE: i32 = 10_000;
 
@@ -50,9 +51,9 @@ fn compute_cost(population: &Vec<&Crab>, position: i32) -> i32 {
   cost
 }
 
-fn print_position(trace_search: bool, position: i32, cost: i32) {
+fn print_position(trace_search: bool, position: i32, cost: i32, writer: &Writer) {
   if trace_search {
-    println!("Position = {}, Cost = {}", position, cost);
+    writer.write(|| format!("Position = {}, Cost = {}", position, cost));
   }
 }
 
@@ -63,14 +64,16 @@ struct SearchOutcome {
 
 struct HillClimbAlg<'a> {
   trace_climb: bool,
+  writer: &'a Writer,
   population: Vec<&'a Crab>,
 }
 
 impl HillClimbAlg<'_> {
-  fn new<'a>(population: Vec<&'a Crab>, trace_climb: bool) -> HillClimbAlg<'a> {
+  fn new<'a>(population: Vec<&'a Crab>, trace_climb: bool, writer: &'a Writer) -> HillClimbAlg<'a> {
     HillClimbAlg {
       population,
       trace_climb,
+      writer,
     }
   }
 
@@ -107,7 +110,7 @@ impl HillClimbAlg<'_> {
   }
 
   fn print_position(&self, position: i32, cost: i32) {
-    print_position(self.trace_climb, position, cost);
+    print_position(self.trace_climb, position, cost, self.writer);
   }
 
   fn execute(&self) -> SearchOutcome {
@@ -144,7 +147,7 @@ impl HillClimbAlg<'_> {
   }
 }
 
-fn exhaustive_search(population: Vec<&Crab>, trace_search: bool) -> SearchOutcome {
+fn exhaustive_search(population: Vec<&Crab>, trace_search: bool, writer: &Writer) -> SearchOutcome {
   let start: i32 = population
     .iter()
     .map(|c| c.original_position)
@@ -157,10 +160,10 @@ fn exhaustive_search(population: Vec<&Crab>, trace_search: bool) -> SearchOutcom
     .unwrap_or(start);
   let mut position = start;
   let mut expended_fuel = compute_cost(&population, position);
-  print_position(trace_search, position, expended_fuel);
+  print_position(trace_search, position, expended_fuel, writer);
   for i in start + 1..end {
     let new_cost = compute_cost(&population, i);
-    print_position(trace_search, i, new_cost);
+    print_position(trace_search, i, new_cost, writer);
     if new_cost < expended_fuel {
       position = i;
       expended_fuel = new_cost;
@@ -173,11 +176,19 @@ fn exhaustive_search(population: Vec<&Crab>, trace_search: bool) -> SearchOutcom
   }
 }
 
-fn execute_search(crabs: Vec<Crab>, config: Config) -> Result<SearchOutcome, String> {
+fn execute_search(
+  crabs: Vec<Crab>,
+  config: Config,
+  writer: &Writer,
+) -> Result<SearchOutcome, String> {
   let trace_search = config.trace_search.unwrap_or(false);
   match config.search_method.as_str() {
-    "hill_climb" => Ok(HillClimbAlg::new(crabs.iter().collect(), trace_search).execute()),
-    "exhaustive_search" => Ok(exhaustive_search(crabs.iter().collect(), trace_search)),
+    "hill_climb" => Ok(HillClimbAlg::new(crabs.iter().collect(), trace_search, writer).execute()),
+    "exhaustive_search" => Ok(exhaustive_search(
+      crabs.iter().collect(),
+      trace_search,
+      writer,
+    )),
     _ => Err(String::from("search_method not recognized")),
   }
 }
@@ -203,16 +214,18 @@ fn parse_crabs(raw_crabs: String, cost_method: &str) -> Result<Vec<Crab>, String
   )
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.data_file)?;
   let crabs = parse_crabs(raw_data, &context.config.cost_method)?;
-  let outcome = execute_search(crabs, context.config)?;
+  let outcome = execute_search(crabs, context.config, &writer)?;
 
-  println!(
-    "Best position is at {} with cost {}",
-    outcome.position, outcome.expended_fuel,
-  );
+  writer.write(|| {
+    format!(
+      "Best position is at {} with cost {}",
+      outcome.position, outcome.expended_fuel,
+    )
+  });
 
   Ok(())
 }

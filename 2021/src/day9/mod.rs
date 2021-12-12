@@ -2,6 +2,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 #[derive(Deserialize)]
 struct Config {
@@ -139,17 +140,21 @@ fn parse_map(raw_map: String) -> HeightMap {
   HeightMap::new(heights)
 }
 
-fn sum_all_risk_scores(height_map: HeightMap) -> Result<(), String> {
+fn sum_all_risk_scores(height_map: HeightMap, writer: &Writer) -> Result<(), String> {
   let risk_sum: i32 = find_all_local_min(&height_map)?
     .into_iter()
     .map(|(x, y)| height_map.height_at_pos(x, y).unwrap() + 1)
     .sum();
-  println!("Sum of all risk scores: {}", risk_sum);
+  writer.write(|| format!("Sum of all risk scores: {}", risk_sum));
 
   Ok(())
 }
 
-fn mult_top_basins(mut height_map: HeightMap, config: Config) -> Result<(), String> {
+fn mult_top_basins(
+  mut height_map: HeightMap,
+  config: Config,
+  writer: &Writer,
+) -> Result<(), String> {
   let num_basins = config
     .num_basins
     .ok_or(String::from("num_basins must be specified with this mode"))?;
@@ -160,18 +165,18 @@ fn mult_top_basins(mut height_map: HeightMap, config: Config) -> Result<(), Stri
   for &(_, size) in basins_size.iter().take(num_basins) {
     basins_total *= size as i32;
   }
-  println!("Multiple of basin sizes: {}", basins_total);
+  writer.write(|| format!("Multiple of basin sizes: {}", basins_total));
 
   Ok(())
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_map = context.load_data(&context.config.map_file)?;
   let height_map = parse_map(raw_map);
   match context.config.mode.as_str() {
-    "locate_min" => sum_all_risk_scores(height_map),
-    "locate_basins" => mult_top_basins(height_map, context.config),
+    "locate_min" => sum_all_risk_scores(height_map, &writer),
+    "locate_basins" => mult_top_basins(height_map, context.config, &writer),
     _ => Err(String::from("Unrecognized mode")),
   }
 }
