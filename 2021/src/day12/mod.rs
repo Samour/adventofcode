@@ -14,125 +14,55 @@ struct Config {
   debug: Option<bool>,
 }
 
-fn is_small_chamber(name: String) -> bool {
-  name.to_lowercase() == name
+fn is_small_chamber(name: &String) -> bool {
+  name.to_lowercase() == *name
 }
 
-struct PartialPath {
-  path: Vec<String>,
-  next_steps: Vec<String>,
-  has_small_repeat: bool,
-}
-
-impl PartialPath {
-  fn next_path(&mut self, edges: &HashMap<String, Vec<String>>) -> Option<PartialPath> {
-    let next_step = self.next_steps.pop()?;
-    let past_small: HashSet<String> = self
-      .path
-      .iter()
-      .cloned()
-      .filter(|n| is_small_chamber(n.clone()))
-      .collect();
-    let mut path = self.path.clone();
-    path.push(next_step.clone());
-    let has_small_repeat = self.has_small_repeat || past_small.contains(&next_step);
-
-    Some(PartialPath {
-      path,
-      next_steps: edges
-        .get(&next_step)
-        .unwrap_or(&Vec::new())
-        .iter()
-        .filter(|&s| s != NAME_START)
-        .filter(|&s| !has_small_repeat || !past_small.contains(s))
-        .cloned()
-        .collect(),
-      has_small_repeat,
-    })
-  }
-
-  fn is_end(&self) -> bool {
-    self
-      .path
-      .get(self.path.len() - 1)
-      .map(|n| n == NAME_END)
-      .unwrap_or(false)
-  }
-
-  fn debug_out(&self) -> String {
-    format!(
-      "{{ [{}], [{}], {} }}",
-      self.path.join(", "),
-      self.next_steps.join(", "),
-      self.has_small_repeat,
-    )
-  }
-}
-
-struct GraphCrawl<'a> {
+struct GraphCrawl {
   edges: HashMap<String, Vec<String>>,
-  paths: Vec<PartialPath>,
-  paths_found: i32,
-  debug: bool,
-  writer: &'a Writer,
+  permit_small_repeat: bool,
+  // Cache
 }
 
-impl GraphCrawl<'_> {
-  fn new<'a>(
-    edges: HashMap<String, Vec<String>>,
-    permit_small_repeat: bool,
-    debug: bool,
-    writer: &'a Writer,
-  ) -> GraphCrawl<'a> {
-    let initial_path = PartialPath {
-      path: vec![String::from(NAME_START)],
-      next_steps: edges.get(NAME_START).cloned().unwrap_or(vec![]),
-      has_small_repeat: !permit_small_repeat,
-    };
+impl GraphCrawl {
+  fn new(edges: HashMap<String, Vec<String>>, permit_small_repeat: bool) -> GraphCrawl {
     GraphCrawl {
       edges,
-      paths: vec![initial_path],
-      paths_found: 0,
-      debug,
-      writer,
+      permit_small_repeat,
     }
   }
 
-  fn search(&mut self) -> i32 {
-    while self.step() {}
-    self.paths_found
-  }
-
-  // false = no further iterations
-  fn step(&mut self) -> bool {
-    self.print_state();
-    match self.paths.pop() {
-      Some(mut path) => {
-        if path.is_end() {
-          self.paths_found += 1;
+  fn count_paths_to_end(&mut self, partial: Vec<String>) -> i32 {
+    let last_node = match partial.get(partial.len() - 1) {
+      Some(n) => n,
+      None => return 0,
+    };
+    let mut has_small_repeat: bool = !self.permit_small_repeat;
+    let mut past_small: HashSet<String> = HashSet::new();
+    for node in &partial {
+      if is_small_chamber(node) {
+        if past_small.contains(node) {
+          has_small_repeat = true;
         } else {
-          match path.next_path(&self.edges) {
-            Some(next_path) => {
-              self.paths.push(path);
-              self.paths.push(next_path);
-            }
-            None => {}
-          }
+          past_small.insert(node.clone());
         }
-        true
       }
-      None => false,
     }
-  }
 
-  fn print_state(&self) {
-    if !self.debug {
-      return;
+    let mut result: i32 = 0;
+    for next_step in self.edges.get(last_node).unwrap_or(&Vec::new()).clone() {
+      if next_step == NAME_START || has_small_repeat && past_small.contains(&next_step) {
+        continue;
+      } else if next_step == NAME_END {
+        result += 1;
+        continue;
+      }
+      let mut path = partial.clone();
+      path.push(next_step);
+      result += self.count_paths_to_end(path);
     }
-    for path in &self.paths {
-      self.writer.write(|| path.debug_out());
-    }
-    self.writer.write(|| "");
+
+    result
   }
 }
 
@@ -147,7 +77,7 @@ fn push_edge(edges: &mut HashMap<String, Vec<String>>, node1: &str, node2: &str)
   push_directed_edge(edges, node2, node1);
 }
 
-fn parse_graph<'a>(raw_edges: String, config: &Config, writer: &'a Writer) -> GraphCrawl<'a> {
+fn parse_graph(raw_edges: String, config: &Config) -> GraphCrawl {
   let mut edges: HashMap<String, Vec<String>> = HashMap::new();
   for raw_edge in raw_edges.split("\n") {
     let parts: Vec<&str> = raw_edge.split("-").collect();
@@ -156,16 +86,11 @@ fn parse_graph<'a>(raw_edges: String, config: &Config, writer: &'a Writer) -> Gr
     }
   }
 
-  GraphCrawl::new(
-    edges,
-    config.permit_small_repeat,
-    config.debug.unwrap_or(false),
-    writer,
-  )
+  GraphCrawl::new(edges, config.permit_small_repeat)
 }
 
 fn count_paths(mut graph_crawl: GraphCrawl, writer: &Writer) -> i64 {
-  let paths = graph_crawl.search();
+  let paths = graph_crawl.count_paths_to_end(vec![String::from(NAME_START)]);
   writer.write(|| format!("Paths found: {}", paths));
   paths as i64
 }
@@ -173,6 +98,6 @@ fn count_paths(mut graph_crawl: GraphCrawl, writer: &Writer) -> i64 {
 pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
   let context: Context<Config> = factory.create()?;
   let raw_edges = context.load_data(&context.config.edges_file)?;
-  let graph_crawl = parse_graph(raw_edges, &context.config, &writer);
+  let graph_crawl = parse_graph(raw_edges, &context.config);
   Ok(count_paths(graph_crawl, &writer))
 }

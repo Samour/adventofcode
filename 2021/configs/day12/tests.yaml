@@ -1,0 +1,25 @@
+tests:
+  - name: Part 1 Sample 1
+    config: p1_sample1.yaml
+    expected_result: 10
+  - name: Part 1 Sample 2
+    config: p1_sample2.yaml
+    expected_result: 19
+  - name: Part 1 Sample 3
+    config: p1_sample3.yaml
+    expected_result: 226
+  - name: Part 1
+    config: part1.yaml
+    expected_result: 5157
+  - name: Part 2 Sample 1
+    config: p2_sample1.yaml
+    expected_result: 36
+  - name: Part 2 Sample 2
+    config: p2_sample2.yaml
+    expected_result: 103
+  - name: Part 2 Sample 3
+    config: p2_sample3.yaml
+    expected_result: 3509
+  - name: Part 2
+    config: part2.yaml
+    expected_result: 144309
