@@ -9,6 +9,7 @@ const NAME_END: &str = "end";
 #[derive(Deserialize)]
 struct Config {
   edges_file: String,
+  permit_small_repeat: bool,
   debug: Option<bool>,
 }
 
@@ -19,18 +20,21 @@ fn is_small_chamber(name: String) -> bool {
 struct PartialPath {
   path: Vec<String>,
   next_steps: Vec<String>,
+  has_small_repeat: bool,
 }
 
 impl PartialPath {
   fn next_path(&mut self, edges: &HashMap<String, Vec<String>>) -> Option<PartialPath> {
     let next_step = self.next_steps.pop()?;
-    let mut path = self.path.clone();
-    path.push(next_step.clone());
-    let excluded_nodes: HashSet<String> = path
+    let past_small: HashSet<String> = self
+      .path
       .iter()
       .cloned()
       .filter(|n| is_small_chamber(n.clone()))
       .collect();
+    let mut path = self.path.clone();
+    path.push(next_step.clone());
+    let has_small_repeat = self.has_small_repeat || past_small.contains(&next_step);
 
     Some(PartialPath {
       path,
@@ -38,9 +42,11 @@ impl PartialPath {
         .get(&next_step)
         .unwrap_or(&Vec::new())
         .iter()
-        .filter(|&s| !excluded_nodes.contains(s))
+        .filter(|&s| s != NAME_START)
+        .filter(|&s| !has_small_repeat || !past_small.contains(s))
         .cloned()
         .collect(),
+      has_small_repeat,
     })
   }
 
@@ -54,9 +60,10 @@ impl PartialPath {
 
   fn debug_out(&self) -> String {
     format!(
-      "{{ [{}], [{}] }}",
+      "{{ [{}], [{}], {} }}",
       self.path.join(", "),
       self.next_steps.join(", "),
+      self.has_small_repeat,
     )
   }
 }
@@ -69,10 +76,15 @@ struct GraphCrawl {
 }
 
 impl GraphCrawl {
-  fn new(edges: HashMap<String, Vec<String>>, debug: bool) -> GraphCrawl {
+  fn new(
+    edges: HashMap<String, Vec<String>>,
+    permit_small_repeat: bool,
+    debug: bool,
+  ) -> GraphCrawl {
     let initial_path = PartialPath {
       path: vec![String::from(NAME_START)],
       next_steps: edges.get(NAME_START).cloned().unwrap_or(vec![]),
+      has_small_repeat: !permit_small_repeat,
     };
     GraphCrawl {
       edges,
@@ -140,7 +152,11 @@ fn parse_graph(raw_edges: String, config: &Config) -> GraphCrawl {
     }
   }
 
-  GraphCrawl::new(edges, config.debug.unwrap_or(false))
+  GraphCrawl::new(
+    edges,
+    config.permit_small_repeat,
+    config.debug.unwrap_or(false),
+  )
 }
 
 fn count_paths(mut graph_crawl: GraphCrawl) {
