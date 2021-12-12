@@ -23,7 +23,7 @@ fn count_matching_filter(
   displays: Vec<DisplayAnalysis>,
   config: Config,
   writer: &Writer,
-) -> Result<(), String> {
+) -> Result<i64, String> {
   let filter_counts = config.filter_by_segment_count;
   if filter_counts.is_none() {
     return Err(String::from(
@@ -43,14 +43,14 @@ fn count_matching_filter(
     )
   });
 
-  Ok(())
+  Ok(count as i64)
 }
 
 fn derive_outputs(
   displays: Vec<DisplayAnalysis>,
   config: Config,
   writer: &Writer,
-) -> Result<(), String> {
+) -> Result<i64, String> {
   let canonical_digits: HashMap<usize, DigitalOutput> = config
     .canonical_digits
     .ok_or(String::from(
@@ -72,12 +72,12 @@ fn derive_outputs(
 
   writer.write(|| format!("Total of all outputs: {}", total));
 
-  Ok(())
+  Ok(total as i64)
 }
 
 fn select_mode(
   mode: &str,
-) -> Result<fn(Vec<DisplayAnalysis>, Config, &Writer) -> Result<(), String>, String> {
+) -> Result<fn(Vec<DisplayAnalysis>, Config, &Writer) -> Result<i64, String>, String> {
   match mode {
     "count_matching_filter" => Ok(count_matching_filter),
     "derive_outputs" => Ok(derive_outputs),
@@ -85,7 +85,7 @@ fn select_mode(
   }
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.data_file)?;
   let displays = parse_displays(&raw_data);

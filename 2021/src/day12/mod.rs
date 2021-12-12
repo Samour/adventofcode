@@ -164,15 +164,15 @@ fn parse_graph<'a>(raw_edges: String, config: &Config, writer: &'a Writer) -> Gr
   )
 }
 
-fn count_paths(mut graph_crawl: GraphCrawl, writer: &Writer) {
+fn count_paths(mut graph_crawl: GraphCrawl, writer: &Writer) -> i64 {
   let paths = graph_crawl.search();
   writer.write(|| format!("Paths found: {}", paths));
+  paths as i64
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
   let context: Context<Config> = factory.create()?;
   let raw_edges = context.load_data(&context.config.edges_file)?;
   let graph_crawl = parse_graph(raw_edges, &context.config, &writer);
-  count_paths(graph_crawl, &writer);
-  Ok(())
+  Ok(count_paths(graph_crawl, &writer))
 }

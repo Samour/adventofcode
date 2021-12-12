@@ -68,8 +68,8 @@ tests:
   - name: Day 12 Part 1 | Passage Pathing - Limited
     config: day12/part1.yaml
     expected_result: 5157
-  # - name: Day 12 Part 2 | Passage Pathing - Additional Repetitions
-  #   config: day12/part2.yaml
-  #   expected_result: 144309
+  - name: Day 12 Part 2 | Passage Pathing - Additional Repetitions
+    config: day12/part2.yaml
+    expected_result: 144309
 config:
   show_errors: true

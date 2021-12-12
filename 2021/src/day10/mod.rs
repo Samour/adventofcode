@@ -94,7 +94,7 @@ fn score_completion(
   Ok(result)
 }
 
-fn compute_checker_score(raw_input: String, config: Config, writer: &Writer) -> Result<(), String> {
+fn compute_checker_score(raw_input: String, config: Config, writer: &Writer) -> Result<i64, String> {
   let mut result: i32 = 0;
   for line in raw_input.split("\n") {
     match parse_line(line)? {
@@ -108,14 +108,14 @@ fn compute_checker_score(raw_input: String, config: Config, writer: &Writer) -> 
   }
   writer.write(|| format!("Checker score: {}", result));
 
-  Ok(())
+  Ok(result as i64)
 }
 
 fn compute_complete_score(
   raw_input: String,
   config: Config,
   writer: &Writer,
-) -> Result<(), String> {
+) -> Result<i64, String> {
   let mut scores: Vec<i64> = Vec::new();
   for line in raw_input.split("\n") {
     match parse_line(line)? {
@@ -130,10 +130,10 @@ fn compute_complete_score(
     .ok_or(String::from("Error when obtaining middle element of list"))?;
   writer.write(|| format!("Autocomplete score: {}", mid_score));
 
-  Ok(())
+  Ok(*mid_score as i64)
 }
 
-fn select_mode(mode: &str) -> Result<fn(String, Config, &Writer) -> Result<(), String>, String> {
+fn select_mode(mode: &str) -> Result<fn(String, Config, &Writer) -> Result<i64, String>, String> {
   match mode {
     "checker_score" => Ok(compute_checker_score),
     "complete_score" => Ok(compute_complete_score),
@@ -141,7 +141,7 @@ fn select_mode(mode: &str) -> Result<fn(String, Config, &Writer) -> Result<(), S
   }
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.text_file)?;
   select_mode(&context.config.mode)?(raw_data, context.config, &writer)

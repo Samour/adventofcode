@@ -54,7 +54,7 @@ impl<'a> TestResultAggregator<'a> {
   }
 
   fn print_results_header(&self) {
-    println!("{:<80}{:<20}{:>15}", "Test case", "Outcome", "Time (ms)");
+    println!("{:<80}{:<20}{:>15}", "Test case", "Output", "Time (ms)");
   }
 
   fn print_test_result(&self, result: &TestOutcome) {

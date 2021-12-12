@@ -60,7 +60,7 @@ fn compute_motion(
   movement_strategy: Box<dyn MovementStrategy>,
   movements: Vec<Movement>,
   writer: Writer,
-) {
+) -> i64 {
   let mut position = Position::new(movement_strategy);
   for movement in movements {
     position.apply_transition(movement);
@@ -73,15 +73,15 @@ fn compute_motion(
       position.length, position.depth, mult
     )
   });
+
+  mult as i64
 }
 
-pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<(), String> {
+pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<i64, String> {
   let context: config::Context<Config> = factory.create()?;
   let file_contents = context.load_data(&context.config.directions_file)?;
   let raw_movements: Vec<&str> = file_contents.split("\n").collect();
   let movements = load_movements(raw_movements);
   let movement_strategy = select_strategy(&context.config.movement_strategy)?;
-  compute_motion(movement_strategy, movements, writer);
-
-  Ok(())
+  Ok(compute_motion(movement_strategy, movements, writer))
 }

@@ -27,7 +27,7 @@ fn parse_binary_str(binary: &str) -> i32 {
   result
 }
 
-fn calculate_power_consumption(data: &Vec<String>, writer: Writer) -> Result<(), String> {
+fn calculate_power_consumption(data: &Vec<String>, writer: Writer) -> Result<i64, String> {
   let gamma_bin = MostCommonBitReducer::new().reduce(data);
   let epsilon_bin = LeastCommonBitReducer::new().reduce(data);
   let gamma = parse_binary_str(&gamma_bin);
@@ -42,10 +42,10 @@ fn calculate_power_consumption(data: &Vec<String>, writer: Writer) -> Result<(),
     )
   });
 
-  Ok(())
+  Ok((gamma * epsilon) as i64)
 }
 
-fn calculate_life_support(data: &Vec<String>, writer: Writer) -> Result<(), String> {
+fn calculate_life_support(data: &Vec<String>, writer: Writer) -> Result<i64, String> {
   let oxygen_rating_bin = filter_by_mask(Box::new(MostCommonBitReducer::new()), &data)
     .ok_or(String::from("Could not match O2 rating"))?;
   let co2_rating_bin = filter_by_mask(Box::new(LeastCommonBitReducer::new()), &data)
@@ -62,10 +62,10 @@ fn calculate_life_support(data: &Vec<String>, writer: Writer) -> Result<(), Stri
     )
   });
 
-  Ok(())
+  Ok((oxygen_rating * co2_rating) as i64)
 }
 
-pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<(), String> {
+pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<i64, String> {
   let context: config::Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.data_file)?;
   let parsed_data: Vec<String> = raw_data.split("\n").map(|s| String::from(s)).collect();
