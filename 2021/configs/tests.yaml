@@ -1,75 +1,75 @@
 tests:
   - name: Day 1 Part 1 | Sonar Sweep
     config: day1/part1.yaml
-    expected_result: 0
+    expected_result: 1564
   - name: Day 1 Part 2 | Sonar Sweep with Windows
     config: day1/part2.yaml
-    expected_result: 0
+    expected_result: 1611
   - name: Day 2 Part 1 | Dive!
     config: day2/part1.yaml
-    expected_result: 0
+    expected_result: 1670340
   - name: Day 2 Part 2 | Dive! with aiming
     config: day2/part2.yaml
-    expected_result: 0
+    expected_result: 1954293920
   - name: Day 3 Part 1 | Binary Diagnostic - Power Consumption
     config: day3/part1.yaml
-    expected_result: 0
+    expected_result: 4138664
   - name: Day 3 Part 2 | Binary Diagnostic - Life Support
     config: day3/part2.yaml
-    expected_result: 0
+    expected_result: 4273224
   - name: Day 4 Part 1 | Giant Squid - Find Winner
     config: day4/part1.yaml
-    expected_result: 0
+    expected_result: 31424
   - name: Day 4 Part 2 | Giant Squid - Find Loser
     config: day4/part2.yaml
-    expected_result: 0
+    expected_result: 23042
   - name: Day 5 Part 1 | Hydrothermal Venture
     config: day5/part1.yaml
-    expected_result: 0
+    expected_result: 6225
   - name: Day 5 Part 2 | Hydrothermal Venture with diagonals
     config: day5/part2.yaml
-    expected_result: 0
+    expected_result: 22116
   - name: Day 6 Part 1 | Lanternfish (small)
     config: day6/part1.yaml
-    expected_result: 0
+    expected_result: 5934
   - name: Day 6 Part 2 | Lanternfish (large)
     config: day6/part2.yaml
-    expected_result: 0
+    expected_result: 1674303997472
   - name: Day 7 Part 1 | The Treachery of Whales - Linear Cost
     config: day7/part1.yaml
-    expected_result: 0
+    expected_result: 354129
   - name: Day 7 Part 2 | The Treachery of Whales - Geometric Cost
     config: day7/part2.yaml
-    expected_result: 0
+    expected_result: 98905973
   - name: Day 8 Part 1 | Seven Segment Search (simple)
     config: day8/part1.yaml
-    expected_result: 0
+    expected_result: 349
   - name: Day 8 Part 2 | Seven Segment Search (comprehensive)
     config: day8/part2.yaml
-    expected_result: 0
+    expected_result: 1070957
   - name: Day 9 Part 1 | Smoke Basin - Local Min
     config: day9/part1.yaml
-    expected_result: 0
+    expected_result: 524
   - name: Day 9 Part 2 | Smoke Basin - Basins
     config: day9/part2.yaml
-    expected_result: 0
+    expected_result: 1235430
   - name: Day 10 Part 1 | Syntax Scoring - Syntax Checker
     config: day10/part1.yaml
-    expected_result: 0
+    expected_result: 341823
   - name: Day 10 Part 2 | Syntax Scoring - Autocomplete
     config: day10/part2.yaml
-    expected_result: 0
+    expected_result: 2801302861
   - name: Day 11 Part 1 | Dumbo Octopus - Count Total Flashes
     config: day11/part1.yaml
-    expected_result: 0
+    expected_result: 1661
   - name: Day 11 Part 2 | Dumbo Octopus - Find All Flashing
     config: day11/part2.yaml
-    expected_result: 0
+    expected_result: 334
   - name: Day 12 Part 1 | Passage Pathing - Limited
     config: day12/part1.yaml
-    expected_result: 0
-  - name: Day 12 Part 2 | Passage Pathing - Additional Repetitions
-    config: day12/part2.yaml
-    expected_result: 0
+    expected_result: 5157
+  # - name: Day 12 Part 2 | Passage Pathing - Additional Repetitions
+  #   config: day12/part2.yaml
+  #   expected_result: 144309
 config:
   show_errors: true

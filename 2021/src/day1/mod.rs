@@ -21,7 +21,7 @@ fn parse_measurements(raw_content: String) -> Vec<i32> {
     .collect()
 }
 
-fn count_increases(measurements: Vec<i32>, writer: Writer) -> Result<(), String> {
+fn count_increases(measurements: Vec<i32>, writer: Writer) -> Result<i64, String> {
   let mut inc_count = 0;
   for i in 1..measurements.len() {
     if measurements[i] > measurements[i - 1] {
@@ -31,7 +31,7 @@ fn count_increases(measurements: Vec<i32>, writer: Writer) -> Result<(), String>
 
   writer.write(|| format!("Total number of increases: {}", inc_count));
 
-  Ok(())
+  Ok(inc_count)
 }
 
 fn create_windows(window_size: usize, measurements: Vec<i32>) -> Vec<i32> {
@@ -51,13 +51,13 @@ fn count_windowed_increases(
   window_size: usize,
   measurements: Vec<i32>,
   writer: Writer,
-) -> Result<(), String> {
+) -> Result<i64, String> {
   let windowed = create_windows(window_size, measurements);
 
   count_increases(windowed, writer)
 }
 
-pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<(), String> {
+pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<i64, String> {
   let context: config::Context<Config> = factory.create()?;
   let raw_content = context.load_data(&context.config.measurements_file)?;
   let measurements = parse_measurements(raw_content);

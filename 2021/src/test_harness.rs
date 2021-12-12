@@ -5,6 +5,14 @@ use crate::config::{Context, ContextFactory};
 use crate::implementations::execute;
 use crate::writer::Writer;
 
+fn colour_if(condition: bool, colour: &str) -> &str {
+  if condition {
+    colour
+  } else {
+    ""
+  }
+}
+
 #[derive(Deserialize)]
 struct TestCase {
   name: String,
@@ -26,7 +34,7 @@ struct TestSuite {
 
 struct TestOutcome<'a> {
   config: &'a TestCase,
-  result: Result<(), String>,
+  result: Result<i64, String>,
   time: u128,
 }
 
@@ -46,20 +54,30 @@ impl<'a> TestResultAggregator<'a> {
   }
 
   fn print_results_header(&self) {
-    println!("{:<80}{:<15}{:>10}", "Test case", "Outcome", "Time (ms)");
+    println!("{:<80}{:<20}{:>15}", "Test case", "Outcome", "Time (ms)");
   }
 
   fn print_test_result(&self, result: &TestOutcome) {
     let outcome = match result.result {
-      Ok(_) => "Completed",
-      Err(_) => "Error",
+      Ok(r) => {
+        if r == result.config.expected_result {
+          format!("\x1b[32m{}\x1b[0m", r)
+        } else {
+          format!("\x1b[31m{}\x1b[0m", r)
+        }
+      }
+      Err(_) => format!("\x1b[31mError\x1b[0m"),
     };
+    // Need extra padding for non-printed characters
     println!(
-      "{:<80}{:<15}{:>20}",
+      "{:<80}{:<29}{:>15}",
       result.config.name, outcome, result.time
     );
     if self.show_errors && result.result.is_err() {
-      println!("       {}", result.result.as_ref().unwrap_err());
+      println!(
+        "       \x1b[31m{}\x1b[0m",
+        result.result.as_ref().unwrap_err()
+      );
     }
   }
 
@@ -70,16 +88,34 @@ impl<'a> TestResultAggregator<'a> {
     let mut total_time: u128 = 0;
     for result in &self.outcomes {
       match result.result {
-        Ok(_) => c_passed += 1,
+        Ok(r) => {
+          if r == result.config.expected_result {
+            c_passed += 1;
+          } else {
+            c_failed += 1;
+          }
+        }
         Err(_) => c_error += 1,
       }
       total_time += result.time;
     }
 
     println!();
-    println!("Tests passed: {}", c_passed);
-    println!("Tests failed: {}", c_failed);
-    println!("Test errors: {}", c_error);
+    println!(
+      "{}Tests passed: {}\x1b[0m",
+      colour_if(c_passed > 0, "\x1b[32m"),
+      c_passed
+    );
+    println!(
+      "{}Tests failed: {}\x1b[0m",
+      colour_if(c_failed > 0, "\x1b[31m"),
+      c_failed
+    );
+    println!(
+      "{}Test errors: {}\x1b[0m",
+      colour_if(c_error > 0, "\x1b[31m"),
+      c_error
+    );
     println!("Total execution time: {} ms", total_time);
   }
 
@@ -121,7 +157,6 @@ fn run_test<'a>(
   let start = Instant::now();
   let result = execute(config_fname, writer);
   let time = start.elapsed().as_millis();
-  
   if enable_printing {
     println!();
   }

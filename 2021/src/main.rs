@@ -1,3 +1,5 @@
+#![allow(warnings)]
+
 mod args;
 mod config;
 mod day1;
@@ -17,7 +19,9 @@ mod test_harness;
 mod writer;
 
 fn execute_single(config_fname: String) -> Result<(), String> {
-    implementations::execute(config_fname, writer::Writer::StdoutWriter)
+    implementations::execute(config_fname, writer::Writer::StdoutWriter)?;
+
+    Ok(())
 }
 
 fn main() -> Result<(), String> {
