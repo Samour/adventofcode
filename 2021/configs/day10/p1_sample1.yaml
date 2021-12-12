@@ -1,5 +1,6 @@
 implementation: day10
 text_file: sample1.txt
+mode: checker_score
 symbol_scores:
   ')': 3
   ']': 57

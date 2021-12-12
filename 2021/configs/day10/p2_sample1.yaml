@@ -1,0 +1,8 @@
+implementation: day10
+text_file: sample1.txt
+mode: complete_score
+symbol_scores:
+  ')': 1
+  ']': 2
+  '}': 3
+  '>': 4
