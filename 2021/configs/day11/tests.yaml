@@ -1,0 +1,13 @@
+tests:
+  - name: Day 11 Part 1 Sample 1
+    config: p1_sample1.yaml
+    expected_result: 0
+  - name: Day 11 Part 2 Sample 1
+    config: p2_sample1.yaml
+    expected_result: 0
+  - name: Day 11 Part 1
+    config: part1.yaml
+    expected_result: 0
+  - name: Day 11 Part 2
+    config: part2.yaml
+    expected_result: 0

@@ -1,5 +1,3 @@
-use serde::Deserialize;
-
 mod args;
 mod config;
 mod day1;
@@ -14,51 +12,26 @@ mod day6;
 mod day7;
 mod day8;
 mod day9;
+mod implementations;
+mod test_harness;
 
-#[derive(Deserialize)]
-struct Config {
-    implementation: String,
-}
-
-fn select_impl(name: &str) -> Option<fn(factory: config::ContextFactory) -> Result<(), String>> {
-    match name {
-        "day1" => Some(day1::main),
-        "day2" => Some(day2::main),
-        "day3" => Some(day3::main),
-        "day4" => Some(day4::main),
-        "day5" => Some(day5::main),
-        "day6" => Some(day6::main),
-        "day7" => Some(day7::main),
-        "day8" => Some(day8::main),
-        "day9" => Some(day9::main),
-        "day10" => Some(day10::main),
-        "day11" => Some(day11::main),
-        "day12" => Some(day12::main),
-        _ => None,
-    }
+fn execute_single(config_fname: String) -> Result<(), String> {
+    implementations::execute(config_fname)
 }
 
 fn main() -> Result<(), String> {
     let mut parser = args::ArgsParser::new();
     parser.arg_str("config");
+    parser.arg_str("tests");
     parser.parse();
 
+    let tests = parser.get_flag("tests");
     let config = parser.get_flag("config");
-    if config.is_none() {
-        return Err(String::from("Config file not specified"));
+    if tests.is_some() {
+        test_harness::execute_tests(tests.unwrap())
+    } else if config.is_some() {
+        execute_single(config.unwrap())
+    } else {
+        Err(String::from("One of --tests or --config must be specified"))
     }
-
-    let context_factory = config::ContextFactory::new(config.unwrap());
-    let config = context_factory.create::<Config>()?.config;
-
-    let problem_impl = select_impl(&config.implementation);
-
-    if problem_impl.is_none() {
-        return Err(format!(
-            "No implementation found for {}",
-            &config.implementation
-        ));
-    }
-
-    problem_impl.unwrap()(context_factory)
 }

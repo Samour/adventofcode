@@ -11,11 +11,17 @@ impl<T> Context<T> {
     Context { fname, config }
   }
 
-  pub fn load_data(&self, fname: &str) -> Result<String, String> {
+  pub fn get_resource(&self, fname: &str) -> Result<String, String> {
     let mut data_path = PathBuf::from(&self.fname);
     data_path.set_file_name(fname);
+    data_path
+      .to_str()
+      .map(String::from)
+      .ok_or_else(|| String::from("Could not compute file path"))
+  }
 
-    let data = std::fs::read_to_string(data_path.as_os_str());
+  pub fn load_data(&self, fname: &str) -> Result<String, String> {
+    let data = std::fs::read_to_string(self.get_resource(fname)?);
 
     match data {
       Ok(d) => Ok(d),
