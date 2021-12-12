@@ -1,0 +1,7 @@
+implementation: day10
+text_file: sample1.txt
+symbol_scores:
+  ')': 3
+  ']': 57
+  '}': 1197
+  '>': 25137
