@@ -6,6 +6,7 @@ use position::{
 };
 
 use crate::config;
+use crate::writer::Writer;
 
 use serde::Deserialize;
 use std::vec::Vec;
@@ -55,26 +56,32 @@ fn select_strategy(strategy_name: &str) -> Result<Box<dyn MovementStrategy>, Str
   }
 }
 
-fn compute_motion(movement_strategy: Box<dyn MovementStrategy>, movements: Vec<Movement>) {
+fn compute_motion(
+  movement_strategy: Box<dyn MovementStrategy>,
+  movements: Vec<Movement>,
+  writer: Writer,
+) {
   let mut position = Position::new(movement_strategy);
   for movement in movements {
     position.apply_transition(movement);
   }
 
   let mult = position.compute_mult();
-  println!(
-    "Position is length={} depth={}; mult is {}",
-    position.length, position.depth, mult
-  );
+  writer.write(|| {
+    format!(
+      "Position is length={} depth={}; mult is {}",
+      position.length, position.depth, mult
+    )
+  });
 }
 
-pub fn main(factory: config::ContextFactory) -> Result<(), String> {
+pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<(), String> {
   let context: config::Context<Config> = factory.create()?;
   let file_contents = context.load_data(&context.config.directions_file)?;
   let raw_movements: Vec<&str> = file_contents.split("\n").collect();
   let movements = load_movements(raw_movements);
   let movement_strategy = select_strategy(&context.config.movement_strategy)?;
-  compute_motion(movement_strategy, movements);
+  compute_motion(movement_strategy, movements, writer);
 
   Ok(())
 }

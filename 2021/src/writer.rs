@@ -4,9 +4,10 @@ pub enum Writer {
 }
 
 impl Writer {
-  pub fn write<F>(&self, generate: F)
+  pub fn write<F, S>(&self, generate: F)
   where
-    F: FnOnce() -> String,
+    F: FnOnce() -> S,
+    S: std::fmt::Display,
   {
     match self {
       Self::StdoutWriter => println!("{}", generate()),

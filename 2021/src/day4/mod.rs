@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
 use crate::config::{Context, ContextFactory};
+use crate::writer::Writer;
 
 mod game;
 mod parse;
@@ -14,27 +15,27 @@ struct Config {
   find_winner: String,
 }
 
-fn find_first_winner(numbers: Vec<i32>, mut boards: Vec<BingoBoard>) {
+fn find_first_winner(numbers: Vec<i32>, mut boards: Vec<BingoBoard>, writer: Writer) {
   for number in numbers {
     for board in &mut boards {
       if board.mark_cell(number) {
-        println!("Winner found! Score: {}", board.score(number));
+        writer.write(|| format!("Winner found! Score: {}", board.score(number)));
         return;
       }
     }
   }
 
-  println!("No winner found");
+  writer.write(|| "No winner found");
 }
 
-fn find_last_winner(numbers: Vec<i32>, mut boards: Vec<BingoBoard>) {
+fn find_last_winner(numbers: Vec<i32>, mut boards: Vec<BingoBoard>, writer: Writer) {
   for number in numbers {
     let boards_len = boards.len();
     let mut not_won_boards: Vec<BingoBoard> = Vec::new();
     for mut board in boards {
       if board.mark_cell(number) {
         if boards_len == 1 {
-          println!("Losing board score: {}", board.score(number));
+          writer.write(|| format!("Losing board score: {}", board.score(number)));
           return;
         }
       } else {
@@ -45,12 +46,14 @@ fn find_last_winner(numbers: Vec<i32>, mut boards: Vec<BingoBoard>) {
   }
 
   match boards.len() {
-    0 => println!("No single loser found!"),
-    _ => println!("Multiple boards left after all numbers"),
+    0 => writer.write(|| "No single loser found!"),
+    _ => writer.write(|| "Multiple boards left after all numbers"),
   }
 }
 
-fn select_strategy(strategy_name: &str) -> Result<fn(Vec<i32>, Vec<BingoBoard>) -> (), String> {
+fn select_strategy(
+  strategy_name: &str,
+) -> Result<fn(Vec<i32>, Vec<BingoBoard>, Writer) -> (), String> {
   match strategy_name {
     "first" => Ok(find_first_winner),
     "last" => Ok(find_last_winner),
@@ -58,12 +61,12 @@ fn select_strategy(strategy_name: &str) -> Result<fn(Vec<i32>, Vec<BingoBoard>) 
   }
 }
 
-pub fn main(factory: ContextFactory) -> Result<(), String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.game_file)?;
   let BingoGame { numbers, boards } = parse_game(raw_data);
 
-  select_strategy(&context.config.find_winner)?(numbers, boards);
+  select_strategy(&context.config.find_winner)?(numbers, boards, writer);
 
   Ok(())
 }
