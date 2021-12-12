@@ -3,6 +3,7 @@ use std::time::Instant;
 
 use crate::config::{Context, ContextFactory};
 use crate::implementations::execute;
+use crate::writer::Writer;
 
 #[derive(Deserialize)]
 struct TestCase {
@@ -31,7 +32,7 @@ struct TestOutcome<'a> {
 
 fn run_test<'a>(config_fname: String, config: &'a TestCase) -> TestOutcome<'a> {
   let start = Instant::now();
-  let result = execute(config_fname);
+  let result = execute(config_fname, Writer::NoopWriter);
   let time = start.elapsed().as_millis();
 
   TestOutcome {
