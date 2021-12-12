@@ -1,4 +1,3 @@
 implementation: day11
 field_file: sample1.txt
-mode: count_flashes
-simulate_rounds: 100
+mode: find_all_flash

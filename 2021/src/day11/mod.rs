@@ -7,7 +7,8 @@ const MAX_LEVEL: i32 = 9;
 #[derive(Deserialize)]
 struct Config {
   field_file: String,
-  simulate_rounds: i32,
+  mode: String,
+  simulate_rounds: Option<i32>,
 }
 
 struct Octopus {
@@ -66,13 +67,14 @@ impl OctoField {
     self.octopi.get_mut(y)?.get_mut(x)
   }
 
-  fn execute_tick(&mut self) {
+  fn execute_tick(&mut self) -> bool {
     let mut increment_stack: Vec<(usize, usize)> = Vec::new();
     for y in 0..self.octopi.len() {
       for x in 0..self.octopi[y].len() {
         increment_stack.push((x, y));
       }
     }
+    let octopi_count = increment_stack.len();
 
     loop {
       match increment_stack.pop() {
@@ -90,6 +92,7 @@ impl OctoField {
       }
     }
 
+    let prior_flash_count = self.flash_count;
     for row in &mut self.octopi {
       for octopus in row {
         if octopus.complete_tick() {
@@ -97,6 +100,7 @@ impl OctoField {
         }
       }
     }
+    self.flash_count - prior_flash_count == octopi_count as i32
   }
 
   fn get_neighbours(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
@@ -141,22 +145,45 @@ fn parse_octo_field(raw_field: String) -> OctoField {
   OctoField::new(octopi)
 }
 
-fn run_simulation(mut octo_field: OctoField, config: Config) {
-  for _ in 0..config.simulate_rounds {
-    octo_field.execute_tick()
+fn count_flashes(mut octo_field: OctoField, config: Config) -> Result<(), String> {
+  let simulate_rounds = config
+    .simulate_rounds
+    .ok_or_else(|| String::from("simulate_rounds is required for this mode"))?;
+  for _ in 0..simulate_rounds {
+    octo_field.execute_tick();
   }
 
   println!(
     "Total number of flashes after {} rounds: {}",
-    config.simulate_rounds, octo_field.flash_count,
+    simulate_rounds, octo_field.flash_count,
   );
+
+  Ok(())
+}
+
+fn find_all_flash(mut octo_field: OctoField) {
+  let mut i: i32 = 0;
+  loop {
+    i += 1;
+    if octo_field.execute_tick() {
+      break;
+    }
+  }
+
+  println!("All flash at step {}", i);
+}
+
+fn run_simulation(octo_field: OctoField, config: Config) -> Result<(), String> {
+  match config.mode.as_str() {
+    "count_flashes" => count_flashes(octo_field, config),
+    "find_all_flash" => Ok(find_all_flash(octo_field)),
+    _ => Err(String::from("mode not recognized")),
+  }
 }
 
 pub fn main(factory: ContextFactory) -> Result<(), String> {
   let context: Context<Config> = factory.create()?;
   let raw_field = context.load_data(&context.config.field_file)?;
   let octo_field = parse_octo_field(raw_field);
-  run_simulation(octo_field, context.config);
-
-  Ok(())
+  run_simulation(octo_field, context.config)
 }
