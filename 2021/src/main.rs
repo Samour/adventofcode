@@ -3,6 +3,9 @@ use serde::Deserialize;
 mod args;
 mod config;
 mod day1;
+mod day10;
+mod day11;
+mod day12;
 mod day2;
 mod day3;
 mod day4;
@@ -11,8 +14,6 @@ mod day6;
 mod day7;
 mod day8;
 mod day9;
-mod day10;
-mod day11;
 
 #[derive(Deserialize)]
 struct Config {
@@ -32,6 +33,7 @@ fn select_impl(name: &str) -> Option<fn(factory: config::ContextFactory) -> Resu
         "day9" => Some(day9::main),
         "day10" => Some(day10::main),
         "day11" => Some(day11::main),
+        "day12" => Some(day12::main),
         _ => None,
     }
 }

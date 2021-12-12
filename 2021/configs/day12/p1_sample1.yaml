@@ -1,0 +1,3 @@
+implementation: day12
+edges_file: sample1.txt
+debug: true
