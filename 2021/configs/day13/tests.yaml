@@ -1,0 +1,13 @@
+tests:
+  - name: Part 1 Sample 1 | 0 folds
+    config: p1_sample1.yaml
+    expected_result: 18
+  - name: Part 1 Sample 1 | 1 fold
+    config: p1_sample2.yaml
+    expected_result: 17
+  - name: Part 1 Sample 1 | 2 folds
+    config: p1_sample3.yaml
+    expected_result: 16
+  - name: Part 1
+    config: part1.yaml
+    expected_result: 689

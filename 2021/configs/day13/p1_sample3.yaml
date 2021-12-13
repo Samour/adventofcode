@@ -1,0 +1,4 @@
+implementation: day13
+data_file: sample1.txt
+folds_to_apply: 2
+render_outcome: true
