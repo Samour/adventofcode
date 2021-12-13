@@ -71,5 +71,11 @@ tests:
   - name: Day 12 Part 2 | Passage Pathing - Additional Repetitions
     config: day12/part2.yaml
     expected_result: 144309
+  - name: Day 13 Part 1 | Transparent Origami
+    config: day13/part1.yaml
+    expected_result: 689
+  - name: Day 13 Part 2 | Transparent Origami Character Reading
+    config: day13/part2.yaml
+    expected_result: -1
 config:
   show_errors: true

@@ -88,7 +88,7 @@ fn parse_input(raw_input: String) -> Result<(PaperPlane, Vec<Fold>), String> {
         Some(point) => {
           dots.insert(point);
         }
-        None => return Err(format!("Error while parsing point"))
+        None => return Err(format!("Error while parsing point")),
       },
       None => match r_fold.captures(line) {
         Some(m) => match to_coord(m.get(2)) {
@@ -97,7 +97,7 @@ fn parse_input(raw_input: String) -> Result<(PaperPlane, Vec<Fold>), String> {
             Some("y") => folds.push(Fold::Horizontal(p)),
             _ => return Err(format!("Error while parsing fold")),
           },
-          None => return Err(format!("Error while parsing fold"))
+          None => return Err(format!("Error while parsing fold")),
         },
         _ => {}
       },
@@ -115,7 +115,7 @@ fn perform_folds(
 ) -> Result<i64, String> {
   let mut i = 0;
   for fold in folds {
-    if i >= config.folds_to_apply {
+    if config.folds_to_apply >= 0 && i >= config.folds_to_apply {
       break;
     }
     i += 1;

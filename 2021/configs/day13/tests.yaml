@@ -11,3 +11,6 @@ tests:
   - name: Part 1
     config: part1.yaml
     expected_result: 689
+  - name: Part 2
+    config: part2.yaml
+    expected_result: -1
