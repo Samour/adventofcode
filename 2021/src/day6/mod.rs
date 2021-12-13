@@ -68,13 +68,12 @@ fn execute_simulation(mut school: LanternSchool, generations: i32, writer: Write
   fish_count
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_school = context.load_data(&context.config.school_file)?;
   let school = parse_school(raw_school);
-  Ok(execute_simulation(
-    school,
-    context.config.simulate_generations,
-    writer,
+  Ok(format!(
+    "{}",
+    execute_simulation(school, context.config.simulate_generations, writer,)
   ))
 }

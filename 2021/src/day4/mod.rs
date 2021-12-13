@@ -19,13 +19,13 @@ fn find_first_winner(
   numbers: Vec<i32>,
   mut boards: Vec<BingoBoard>,
   writer: Writer,
-) -> Result<i64, String> {
+) -> Result<i32, String> {
   for number in numbers {
     for board in &mut boards {
       if board.mark_cell(number) {
         let score = board.score(number);
         writer.write(|| format!("Winner found! Score: {}", score));
-        return Ok(score as i64);
+        return Ok(score);
       }
     }
   }
@@ -38,7 +38,7 @@ fn find_last_winner(
   numbers: Vec<i32>,
   mut boards: Vec<BingoBoard>,
   writer: Writer,
-) -> Result<i64, String> {
+) -> Result<i32, String> {
   for number in numbers {
     let boards_len = boards.len();
     let mut not_won_boards: Vec<BingoBoard> = Vec::new();
@@ -47,7 +47,7 @@ fn find_last_winner(
         if boards_len == 1 {
           let score = board.score(number);
           writer.write(|| format!("Losing board score: {}", score));
-          return Ok(score as i64);
+          return Ok(score);
         }
       } else {
         not_won_boards.push(board);
@@ -70,7 +70,7 @@ fn find_last_winner(
 
 fn select_strategy(
   strategy_name: &str,
-) -> Result<fn(Vec<i32>, Vec<BingoBoard>, Writer) -> Result<i64, String>, String> {
+) -> Result<fn(Vec<i32>, Vec<BingoBoard>, Writer) -> Result<i32, String>, String> {
   match strategy_name {
     "first" => Ok(find_first_winner),
     "last" => Ok(find_last_winner),
@@ -78,10 +78,10 @@ fn select_strategy(
   }
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.game_file)?;
   let BingoGame { numbers, boards } = parse_game(raw_data);
 
-  select_strategy(&context.config.find_winner)?(numbers, boards, writer)
+  select_strategy(&context.config.find_winner)?(numbers, boards, writer).map(|r| format!("{}", r))
 }

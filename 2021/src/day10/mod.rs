@@ -141,8 +141,8 @@ fn select_mode(mode: &str) -> Result<fn(String, Config, &Writer) -> Result<i64, 
   }
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.text_file)?;
-  select_mode(&context.config.mode)?(raw_data, context.config, &writer)
+  select_mode(&context.config.mode)?(raw_data, context.config, &writer).map(|r| format!("{}", r))
 }

@@ -22,7 +22,7 @@ fn filter_for_vertical(lines: Vec<Line>) -> Vec<Line> {
     .collect()
 }
 
-fn count_intersections(lines: Vec<Line>, writer: Writer) -> i64 {
+fn count_intersections(lines: Vec<Line>, writer: Writer) -> i32 {
   let map_count = count_lines_at_points(lines.iter().collect());
   let mut intersection_count: i32 = 0;
   for &count in map_count.values() {
@@ -32,20 +32,23 @@ fn count_intersections(lines: Vec<Line>, writer: Writer) -> i64 {
   }
 
   writer.write(|| format!("Number of intersecting lines: {}", intersection_count));
-  intersection_count as i64
+  intersection_count
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_lines = context.load_data(&context.config.data_file)?;
   let lines = parse_lines(raw_lines);
 
-  Ok(count_intersections(
-    if context.config.apply_filter {
-      filter_for_vertical(lines)
-    } else {
-      lines
-    },
-    writer,
+  Ok(format!(
+    "{}",
+    count_intersections(
+      if context.config.apply_filter {
+        filter_for_vertical(lines)
+      } else {
+        lines
+      },
+      writer,
+    )
   ))
 }

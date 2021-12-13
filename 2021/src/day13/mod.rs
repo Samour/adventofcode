@@ -112,7 +112,7 @@ fn perform_folds(
   folds: Vec<Fold>,
   config: Config,
   writer: Writer,
-) -> Result<i64, String> {
+) -> Result<i32, String> {
   let mut i = 0;
   for fold in folds {
     if config.folds_to_apply >= 0 && i >= config.folds_to_apply {
@@ -127,12 +127,12 @@ fn perform_folds(
     writer.write(|| plane.draw_plane().unwrap_or_else(String::new));
   }
 
-  Ok(plane.dots.len() as i64)
+  Ok(plane.dots.len() as i32)
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_input = context.load_data(&context.config.data_file)?;
   let (paper_plane, folds) = parse_input(raw_input)?;
-  perform_folds(paper_plane, folds, context.config, writer)
+  perform_folds(paper_plane, folds, context.config, writer).map(|r| format!("{}", r))
 }

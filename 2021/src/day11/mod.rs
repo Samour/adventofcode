@@ -146,7 +146,11 @@ fn parse_octo_field(raw_field: String) -> OctoField {
   OctoField::new(octopi)
 }
 
-fn count_flashes(mut octo_field: OctoField, config: Config, writer: &Writer) -> Result<i64, String> {
+fn count_flashes(
+  mut octo_field: OctoField,
+  config: Config,
+  writer: &Writer,
+) -> Result<i32, String> {
   let simulate_rounds = config
     .simulate_rounds
     .ok_or_else(|| String::from("simulate_rounds is required for this mode"))?;
@@ -161,10 +165,10 @@ fn count_flashes(mut octo_field: OctoField, config: Config, writer: &Writer) -> 
     )
   });
 
-  Ok(octo_field.flash_count as i64)
+  Ok(octo_field.flash_count)
 }
 
-fn find_all_flash(mut octo_field: OctoField, writer: &Writer) -> i64 {
+fn find_all_flash(mut octo_field: OctoField, writer: &Writer) -> i32 {
   let mut i: i32 = 0;
   loop {
     i += 1;
@@ -174,10 +178,10 @@ fn find_all_flash(mut octo_field: OctoField, writer: &Writer) -> i64 {
   }
 
   writer.write(|| format!("All flash at step {}", i));
-  i as i64
+  i
 }
 
-fn run_simulation(octo_field: OctoField, config: Config, writer: &Writer) -> Result<i64, String> {
+fn run_simulation(octo_field: OctoField, config: Config, writer: &Writer) -> Result<i32, String> {
   match config.mode.as_str() {
     "count_flashes" => count_flashes(octo_field, config, writer),
     "find_all_flash" => Ok(find_all_flash(octo_field, writer)),
@@ -185,9 +189,9 @@ fn run_simulation(octo_field: OctoField, config: Config, writer: &Writer) -> Res
   }
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_field = context.load_data(&context.config.field_file)?;
   let octo_field = parse_octo_field(raw_field);
-  run_simulation(octo_field, context.config, &writer)
+  run_simulation(octo_field, context.config, &writer).map(|r| format!("{}", r))
 }

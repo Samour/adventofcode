@@ -57,7 +57,7 @@ fn count_windowed_increases(
   count_increases(windowed, writer)
 }
 
-pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<String, String> {
   let context: config::Context<Config> = factory.create()?;
   let raw_content = context.load_data(&context.config.measurements_file)?;
   let measurements = parse_measurements(raw_content);
@@ -72,4 +72,5 @@ pub fn main(factory: config::ContextFactory, writer: Writer) -> Result<i64, Stri
   } else {
     Err(format!("Unrecognized mode: {}", &context.config.mode))
   }
+  .map(|r| format!("{}", r))
 }

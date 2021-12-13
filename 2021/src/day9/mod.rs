@@ -140,21 +140,21 @@ fn parse_map(raw_map: String) -> HeightMap {
   HeightMap::new(heights)
 }
 
-fn sum_all_risk_scores(height_map: HeightMap, writer: &Writer) -> Result<i64, String> {
+fn sum_all_risk_scores(height_map: HeightMap, writer: &Writer) -> Result<i32, String> {
   let risk_sum: i32 = find_all_local_min(&height_map)?
     .into_iter()
     .map(|(x, y)| height_map.height_at_pos(x, y).unwrap() + 1)
     .sum();
   writer.write(|| format!("Sum of all risk scores: {}", risk_sum));
 
-  Ok(risk_sum as i64)
+  Ok(risk_sum)
 }
 
 fn mult_top_basins(
   mut height_map: HeightMap,
   config: Config,
   writer: &Writer,
-) -> Result<i64, String> {
+) -> Result<i32, String> {
   let num_basins = config
     .num_basins
     .ok_or(String::from("num_basins must be specified with this mode"))?;
@@ -167,10 +167,10 @@ fn mult_top_basins(
   }
   writer.write(|| format!("Multiple of basin sizes: {}", basins_total));
 
-  Ok(basins_total as i64)
+  Ok(basins_total)
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_map = context.load_data(&context.config.map_file)?;
   let height_map = parse_map(raw_map);
@@ -179,4 +179,5 @@ pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
     "locate_basins" => mult_top_basins(height_map, context.config, &writer),
     _ => Err(String::from("Unrecognized mode")),
   }
+  .map(|r| format!("{}", r))
 }

@@ -8,7 +8,7 @@ struct Config {
   implementation: String,
 }
 
-fn select_impl(name: &str) -> Option<fn(factory: ContextFactory, writer: Writer) -> Result<i64, String>> {
+fn select_impl(name: &str) -> Option<fn(factory: ContextFactory, writer: Writer) -> Result<String, String>> {
   match name {
     "day1" => Some(crate::day1::main),
     "day2" => Some(crate::day2::main),
@@ -27,7 +27,7 @@ fn select_impl(name: &str) -> Option<fn(factory: ContextFactory, writer: Writer)
   }
 }
 
-pub fn execute(config_fname: String, writer: Writer) -> Result<i64, String> {
+pub fn execute(config_fname: String, writer: Writer) -> Result<String, String> {
   let context_factory = ContextFactory::new(config_fname);
   let config: Config = context_factory.create()?.config;
 

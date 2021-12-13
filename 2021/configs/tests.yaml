@@ -76,6 +76,6 @@ tests:
     expected_result: 689
   - name: Day 13 Part 2 | Transparent Origami Character Reading
     config: day13/part2.yaml
-    expected_result: -1
+    expected_result: RLBCJGLU
 config:
   show_errors: true

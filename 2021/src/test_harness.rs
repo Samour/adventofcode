@@ -17,7 +17,7 @@ fn colour_if(condition: bool, colour: &str) -> &str {
 struct TestCase {
   name: String,
   config: String,
-  expected_result: i64,
+  expected_result: String,
 }
 
 #[derive(Deserialize)]
@@ -34,7 +34,7 @@ struct TestSuite {
 
 struct TestOutcome<'a> {
   config: &'a TestCase,
-  result: Result<i64, String>,
+  result: Result<String, String>,
   time: u128,
 }
 
@@ -58,9 +58,9 @@ impl<'a> TestResultAggregator<'a> {
   }
 
   fn print_test_result(&self, result: &TestOutcome) {
-    let outcome = match result.result {
+    let outcome = match &result.result {
       Ok(r) => {
-        if r == result.config.expected_result {
+        if *r == result.config.expected_result {
           format!("\x1b[32m{}\x1b[0m", r)
         } else {
           format!("\x1b[31m{}\x1b[0m", r)
@@ -87,9 +87,9 @@ impl<'a> TestResultAggregator<'a> {
     let mut c_error: i32 = 0;
     let mut total_time: u128 = 0;
     for result in &self.outcomes {
-      match result.result {
+      match &result.result {
         Ok(r) => {
-          if r == result.config.expected_result {
+          if *r == result.config.expected_result {
             c_passed += 1;
           } else {
             c_failed += 1;

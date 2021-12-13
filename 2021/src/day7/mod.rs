@@ -214,7 +214,7 @@ fn parse_crabs(raw_crabs: String, cost_method: &str) -> Result<Vec<Crab>, String
   )
 }
 
-pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
+pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_data = context.load_data(&context.config.data_file)?;
   let crabs = parse_crabs(raw_data, &context.config.cost_method)?;
@@ -227,5 +227,5 @@ pub fn main(factory: ContextFactory, writer: Writer) -> Result<i64, String> {
     )
   });
 
-  Ok(outcome.expended_fuel as i64)
+  Ok(format!("{}", outcome.expended_fuel))
 }
