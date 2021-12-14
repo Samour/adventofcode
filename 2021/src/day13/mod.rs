@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::collections::HashSet;
 
 use crate::config::{Context, ContextFactory};
+use crate::letters::LetterUtil;
 use crate::writer::Writer;
 
 #[derive(Deserialize)]
@@ -10,6 +11,8 @@ struct Config {
   data_file: String,
   folds_to_apply: i32,
   render_outcome: bool,
+  mode: String,
+  letters_file: Option<String>,
 }
 
 enum Fold {
@@ -108,14 +111,14 @@ fn parse_input(raw_input: String) -> Result<(PaperPlane, Vec<Fold>), String> {
 }
 
 fn perform_folds(
+  context: Context<Config>,
   mut plane: PaperPlane,
   folds: Vec<Fold>,
-  config: Config,
   writer: Writer,
-) -> Result<i32, String> {
+) -> Result<String, String> {
   let mut i = 0;
   for fold in folds {
-    if config.folds_to_apply >= 0 && i >= config.folds_to_apply {
+    if context.config.folds_to_apply >= 0 && i >= context.config.folds_to_apply {
       break;
     }
     i += 1;
@@ -123,16 +126,33 @@ fn perform_folds(
   }
 
   writer.write(|| format!("Dots on final PaperPlane: {}", plane.dots.len()));
-  if config.render_outcome {
+  if context.config.render_outcome {
     writer.write(|| plane.draw_plane().unwrap_or_else(String::new));
   }
 
-  Ok(plane.dots.len() as i32)
+  match context.config.mode.as_str() {
+    "count" => Ok(format!("{}", plane.dots.len())),
+    "text" => LetterUtil::from_source(
+      context.load_data(
+        context
+          .config
+          .letters_file
+          .as_ref()
+          .ok_or_else(|| format!("letters_file is required for this mode"))?,
+      )?,
+    )?
+    .interpret(
+      plane
+        .draw_plane()
+        .unwrap_or_else(|| format!("Failed to draw plane")),
+    ),
+    _ => Err(format!("Mode not recognized")),
+  }
 }
 
 pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
   let raw_input = context.load_data(&context.config.data_file)?;
   let (paper_plane, folds) = parse_input(raw_input)?;
-  perform_folds(paper_plane, folds, context.config, writer).map(|r| format!("{}", r))
+  perform_folds(context, paper_plane, folds, writer)
 }

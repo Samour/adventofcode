@@ -17,6 +17,7 @@ mod day7;
 mod day8;
 mod day9;
 mod implementations;
+mod letters;
 mod test_harness;
 mod writer;
 
