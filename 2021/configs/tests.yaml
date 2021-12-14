@@ -77,5 +77,8 @@ tests:
   - name: Day 13 Part 2 | Transparent Origami Character Reading
     config: day13/part2.yaml
     expected_result: RLBCJGLU
+  - name: Day 14 Part 1 | Extended Polymerization
+    config: day14/part1.yaml
+    expected_result: 3284
 config:
   show_errors: true
