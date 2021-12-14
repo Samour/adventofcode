@@ -5,5 +5,11 @@ tests:
   - name: Part 1
     config: part1.yaml
     expected_result: 3284
+  - name: Part 2 Sample 1
+    config: p2_sample1.yaml
+    expected_result: 2188189693529
+  - name: Part 2
+    config: part2.yaml
+    expected_result: 4302675529689
 config:
   show_errors: true

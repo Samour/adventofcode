@@ -80,5 +80,8 @@ tests:
   - name: Day 14 Part 1 | Extended Polymerization
     config: day14/part1.yaml
     expected_result: 3284
+  - name: Day 14 Part 2 | Much Extended Polymerization
+    config: day14/part2.yaml
+    expected_result: 4302675529689
 config:
   show_errors: true
