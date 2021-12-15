@@ -5,6 +5,73 @@ use crate::writer::Writer;
 
 const UNKNOWN_COST: i32 = 1_000_000;
 
+struct MinHeap {
+  elements: Vec<(i32, (i32, i32))>,
+}
+
+impl MinHeap {
+  fn new() -> MinHeap {
+    MinHeap {
+      elements: Vec::new(),
+    }
+  }
+
+  fn is_empty(&self) -> bool {
+    self.elements.is_empty()
+  }
+
+  fn swap(&mut self, i: usize, j: usize) {
+    let swap = self.elements[i];
+    self.elements[i] = self.elements[j];
+    self.elements[j] = swap;
+  }
+
+  fn push_element(&mut self, item: (i32, i32), score: i32) {
+    self.elements.push((score, item));
+    self.float_node(self.elements.len());
+  }
+
+  fn float_node(&mut self, index: usize) {
+    if index == 1 || self.elements[index - 1].0 > self.elements[index / 2 - 1].0 {
+      return;
+    }
+    self.swap(index / 2 - 1, index - 1);
+    self.float_node(index / 2);
+  }
+
+  fn pop_element(&mut self) -> Option<(i32, i32)> {
+    if self.elements.len() <= 1 {
+      return self.elements.pop().map(|(_, n)| n);
+    }
+    let result = self.elements[0].1;
+    self.elements[0] = self.elements.pop()?;
+    self.sink_node(1);
+    Some(result)
+  }
+
+  fn sink_node(&mut self, index: usize) {
+    if index * 2 > self.elements.len() {
+      return;
+    }
+    if index * 2 == self.elements.len() {
+      if self.elements[index - 1].0 >= self.elements[index * 2 - 1].0 {
+        self.swap(index - 1, index * 2 - 1);
+        self.sink_node(index * 2);
+      }
+    } else if self.elements[index - 1].0 >= self.elements[index * 2 - 1].0
+      || self.elements[index - 1].0 >= self.elements[index * 2].0
+    {
+      if self.elements[index * 2 - 1] < self.elements[index * 2] {
+        self.swap(index - 1, index * 2 - 1);
+        self.sink_node(index * 2);
+      } else {
+        self.swap(index - 1, index * 2);
+        self.sink_node(index * 2 + 1);
+      }
+    }
+  }
+}
+
 struct PathFinding<'a> {
   start_position: (i32, i32),
   target_position: (i32, i32),
@@ -49,9 +116,10 @@ impl PathFinding<'_> {
   }
 
   fn build_path(&mut self) -> Result<i32, String> {
-    let mut queue: Vec<(i32, i32)> = vec![self.start_position];
-    while !queue.is_empty() {
-      let node = match queue.pop() {
+    let mut heap: MinHeap = MinHeap::new();
+    heap.push_element((0, 0), 0);
+    while !heap.is_empty() {
+      let node = match heap.pop_element() {
         Some(n) => n,
         None => return Err(format!("Finished searching nodes without reaching target")),
       };
@@ -69,7 +137,7 @@ impl PathFinding<'_> {
         let n_new_cost = node_cost + self.specific_risk.get(&n).unwrap();
         if self.path_risk.get(&n).unwrap().clone() > n_new_cost {
           self.path_risk.insert(n, n_new_cost);
-          queue.push(n);
+          heap.push_element(n, self.score_queue_item(&n));
           did_push = true;
           if self.debug {
             self
@@ -78,24 +146,9 @@ impl PathFinding<'_> {
           }
         }
       }
-      if did_push {
-        queue = self.sort_queue(queue);
-      }
     }
 
     Err(format!("path to target position not found"))
-  }
-
-  fn sort_queue(&self, mut queue: Vec<(i32, i32)>) -> Vec<(i32, i32)> {
-    queue.sort_by(|a, b| self.score_queue_item(b).cmp(&self.score_queue_item(a)));
-    let mut result: Vec<(i32, i32)> = Vec::new();
-    for n in queue {
-      if result.is_empty() || result[result.len() - 1] != n {
-        result.push(n);
-      }
-    }
-
-    result
   }
 
   fn score_queue_item(&self, node: &(i32, i32)) -> i32 {

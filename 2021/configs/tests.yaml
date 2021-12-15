@@ -86,5 +86,8 @@ tests:
   - name: Day 11 Part 1 | Chiton
     config: day15/part1.yaml
     expected_result: 527
+  - name: Day 11 Part 2 | Chiton Multiplied
+    config: day15/part2.yaml
+    expected_result: 2887
 config:
   show_errors: true

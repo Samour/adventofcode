@@ -8,5 +8,8 @@ tests:
   - name: Part 2 Sample 1
     config: p2_sample1.yaml
     expected_result: 315
+  - name: Part 2
+    config: part2.yaml
+    expected_result: 2887
 config:
   show_errors: true
