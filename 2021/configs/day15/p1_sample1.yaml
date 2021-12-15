@@ -1,0 +1,3 @@
+implementation: day15
+risk_map_file: sample1.txt
+debug: false

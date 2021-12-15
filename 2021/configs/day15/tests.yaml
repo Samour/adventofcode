@@ -1,0 +1,9 @@
+tests:
+  - name: Part 1 Sample 1
+    config: p1_sample1.yaml
+    expected_result: 40
+  - name: Part 1
+    config: part1.yaml
+    expected_result: 527
+config:
+  show_errors: true

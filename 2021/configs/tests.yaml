@@ -83,5 +83,8 @@ tests:
   - name: Day 14 Part 2 | Much Extended Polymerization
     config: day14/part2.yaml
     expected_result: 4302675529689
+  - name: Day 11 Part 1 | Chiton
+    config: day15/part1.yaml
+    expected_result: 527
 config:
   show_errors: true
