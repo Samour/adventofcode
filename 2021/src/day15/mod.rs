@@ -57,39 +57,33 @@ impl PathFinding<'_> {
   }
 
   fn build_path(&mut self) -> Result<i32, String> {
-    let mut queue: Vec<(i32, i32)> = self.get_adjacent_nodes(&self.start_position);
-    queue = self.sort_queue(queue);
+    let mut queue: Vec<(i32, i32)> = vec![self.start_position];
     while !queue.is_empty() {
       let node = match queue.pop() {
         Some(n) => n,
         None => return Err(format!("Finished searching nodes without reaching target")),
       };
       let neighbours = self.get_adjacent_nodes(&node);
-      let new_cost = neighbours
-        .iter()
-        .map(|n| self.path_risk.get(n).unwrap())
-        .min()
-        .ok_or_else(|| format!("Node referenced without any cost"))?
-        + self
-          .specific_risk
-          .get(&node)
-          .ok_or_else(|| format!("Node referenced without any cost"))?;
-      if self.debug {
-        self
-          .writer
-          .write(|| format!("cost({}, {}) = {}", node.0, node.1, new_cost));
-      }
+      let mut node_cost = self
+        .path_risk
+        .get(&node)
+        .cloned()
+        .ok_or_else(|| format!("node missing from risk map"))?;
       if node == self.target_position {
-        return Ok(new_cost);
+        return Ok(node_cost);
       }
-      self.path_risk.insert(node, new_cost);
       let mut did_push: bool = false;
       for n in neighbours {
-        let n_new_cost = new_cost + self.specific_risk.get(&n).unwrap();
+        let n_new_cost = node_cost + self.specific_risk.get(&n).unwrap();
         if self.path_risk.get(&n).unwrap().clone() > n_new_cost {
           self.path_risk.insert(n, n_new_cost);
           queue.push(n);
           did_push = true;
+          if self.debug {
+            self
+              .writer
+              .write(|| format!("cost({}, {}) = {}", n.0, n.1, n_new_cost));
+          }
         }
       }
       if did_push {
