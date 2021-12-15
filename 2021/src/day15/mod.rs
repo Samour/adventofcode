@@ -6,6 +6,7 @@ use crate::writer::Writer;
 
 mod a_star;
 mod config;
+mod dynamic;
 
 use config::Config;
 
@@ -59,6 +60,7 @@ fn find_path(
 ) -> Result<i32, String> {
   let result = match config.strategy.as_str() {
     "A*" => a_star::find_path_cost(risk_map, config, writer)?,
+    "dynamic" => dynamic::compute_risk(risk_map)?,
     _ => return Err(format!("Unknown strategy")),
   };
   writer.write(|| format!("Cost of least risky path: {}", result));
