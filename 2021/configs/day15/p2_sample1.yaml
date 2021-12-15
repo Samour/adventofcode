@@ -1,4 +1,4 @@
 implementation: day15
 risk_map_file: sample1.txt
-mult_factor: 1
+mult_factor: 5
 debug: false

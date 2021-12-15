@@ -9,6 +9,7 @@ const UNKNOWN_COST: i32 = 1_000_000;
 #[derive(Deserialize)]
 struct Config {
   risk_map_file: String,
+  mult_factor: i32,
   debug: bool,
 }
 
@@ -143,9 +144,25 @@ fn parse_risk_map<'a>(
     y += 1;
   }
 
+  for i in 0..config.mult_factor {
+    for j in 0..config.mult_factor {
+      if i == 0 && j == 0 {
+        continue;
+      }
+      for x1 in 0..x {
+        for y1 in 0..y {
+          specific_risk.insert(
+            (i * x + x1, j * y + y1),
+            (specific_risk.get(&(x1, y1)).unwrap() + i + j - 1) % 9 + 1,
+          );
+        }
+      }
+    }
+  }
+
   Ok(PathFinding::create(
     (0, 0),
-    (x - 1, y - 1),
+    (x * config.mult_factor - 1, y * config.mult_factor - 1),
     specific_risk,
     config.debug,
     writer,
