@@ -83,11 +83,14 @@ tests:
   - name: Day 14 Part 2 | Much Extended Polymerization
     config: day14/part2.yaml
     expected_result: 4302675529689
-  - name: Day 11 Part 1 | Chiton
+  - name: Day 15 Part 1 | Chiton
     config: day15/part1.yaml
     expected_result: 527
-  - name: Day 11 Part 2 | Chiton Multiplied
+  - name: Day 15 Part 2 | Chiton Multiplied
     config: day15/part2.yaml
     expected_result: 2887
+  - name: Day 16 Part 1 | Packet Decoder
+    config: day16/part1.yaml
+    expected_result: 847
 config:
   show_errors: true
