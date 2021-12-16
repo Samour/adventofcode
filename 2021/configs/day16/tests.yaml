@@ -14,5 +14,32 @@ tests:
   - name: Part 1
     config: part1.yaml
     expected_result: 847
+  - name: Part 2 Sample 1
+    config: p2_sample1.yaml
+    expected_result: 3
+  - name: Part 2 Sample 2
+    config: p2_sample2.yaml
+    expected_result: 54
+  - name: Part 2 Sample 3
+    config: p2_sample3.yaml
+    expected_result: 7
+  - name: Part 2 Sample 4
+    config: p2_sample4.yaml
+    expected_result: 9
+  - name: Part 2 Sample 5
+    config: p2_sample5.yaml
+    expected_result: 1
+  - name: Part 2 Sample 6
+    config: p2_sample6.yaml
+    expected_result: 0
+  - name: Part 2 Sample 7
+    config: p2_sample7.yaml
+    expected_result: 0
+  - name: Part 2 Sample 8
+    config: p2_sample8.yaml
+    expected_result: 1
+  - name: Part 2
+    config: part2.yaml
+    expected_result: 333794664059
 config:
   show_errors: true

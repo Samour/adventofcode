@@ -21,21 +21,173 @@ const VALUE_MASK: i64 = 0x0f;
 const VALUE_CONTINUE_MASK: i64 = 0x10;
 const VALUE_BLOCK_MAG: i64 = 16;
 
+// Operator codes
+const OPERATOR_SUM: i64 = 0;
+const OPERATOR_PRODUCT: i64 = 1;
+const OPERATOR_MIN: i64 = 2;
+const OPERATOR_MAX: i64 = 3;
+const OPERATOR_GT: i64 = 5;
+const OPERATOR_LT: i64 = 6;
+const OPERATOR_EQ: i64 = 7;
+
 #[derive(Deserialize)]
 struct Config {
+  compute: String,
   packet_data: Option<String>,
   packet_file: Option<String>,
+  print_expression: Option<bool>,
+}
+
+enum Operator {
+  Sum,
+  Product,
+  Minimum,
+  Maximum,
+  GreaterThan,
+  LessThan,
+  Equal,
+}
+
+struct OperatorPacket {
+  operator: Operator,
+  sub_packets: Vec<Packet>,
+}
+
+impl OperatorPacket {
+  fn evaluate(&self) -> Result<i64, String> {
+    match self.operator {
+      Operator::Sum => self.evaluate_sum(),
+      Operator::Product => self.evaluate_product(),
+      Operator::Minimum => self.evaluate_minimum(),
+      Operator::Maximum => self.evaluate_maximum(),
+      Operator::GreaterThan => self.evaluate_greater_than(),
+      Operator::LessThan => self.evaluate_less_than(),
+      Operator::Equal => self.evaluate_equal(),
+    }
+  }
+
+  fn evaluate_sum(&self) -> Result<i64, String> {
+    let mut result: i64 = 0;
+    for x in &self.sub_packets {
+      result += x.evaluate()?;
+    }
+
+    Ok(result)
+  }
+
+  fn evaluate_product(&self) -> Result<i64, String> {
+    let mut result: i64 = 1;
+    for x in &self.sub_packets {
+      result *= x.evaluate()?;
+    }
+
+    Ok(result)
+  }
+
+  fn evaluate_minimum(&self) -> Result<i64, String> {
+    let mut min: i64 = i64::MAX;
+    for x in &self.sub_packets {
+      let x_val = x.evaluate()?;
+      if x_val < min {
+        min = x_val;
+      }
+    }
+
+    Ok(min)
+  }
+
+  fn evaluate_maximum(&self) -> Result<i64, String> {
+    let mut max: i64 = 0;
+    for x in &self.sub_packets {
+      let x_val = x.evaluate()?;
+      if x_val > max {
+        max = x_val;
+      }
+    }
+
+    Ok(max)
+  }
+
+  fn evaluate_greater_than(&self) -> Result<i64, String> {
+    if self.sub_packets.len() != 2 {
+      return Err(format!(
+        "GreaterThan packet must have exactly 2 sub-packets"
+      ));
+    }
+    if self.sub_packets[0].evaluate() > self.sub_packets[1].evaluate() {
+      Ok(1)
+    } else {
+      Ok(0)
+    }
+  }
+
+  fn evaluate_less_than(&self) -> Result<i64, String> {
+    if self.sub_packets.len() != 2 {
+      return Err(format!("LessThan packet must have exactly 2 sub-packets"));
+    }
+    if self.sub_packets[0].evaluate() < self.sub_packets[1].evaluate() {
+      Ok(1)
+    } else {
+      Ok(0)
+    }
+  }
+
+  fn evaluate_equal(&self) -> Result<i64, String> {
+    if self.sub_packets.len() != 2 {
+      return Err(format!("Equal packet must have exactly 2 sub-packets"));
+    }
+    if self.sub_packets[0].evaluate() == self.sub_packets[1].evaluate() {
+      Ok(1)
+    } else {
+      Ok(0)
+    }
+  }
+
+  fn render(&self) -> String {
+    let name = match self.operator {
+      Operator::Sum => "Sum",
+      Operator::Product => "Product",
+      Operator::Minimum => "Minimum",
+      Operator::Maximum => "Maximum",
+      Operator::GreaterThan => "GreaterThan",
+      Operator::LessThan => "LessThan",
+      Operator::Equal => "Equal",
+    };
+    let contents: String = self
+      .sub_packets
+      .iter()
+      .map(|p| p.render())
+      .collect::<Vec<String>>()
+      .join(" , ");
+    format!("{}( {} )", name, contents)
+  }
 }
 
 enum PacketContents {
   IntValue(i64),
-  Operator(Vec<Packet>),
+  Operator(OperatorPacket),
 }
 
 struct Packet {
   version_number: i64,
   type_code: i64,
   contents: PacketContents,
+}
+
+impl Packet {
+  fn evaluate(&self) -> Result<i64, String> {
+    match &self.contents {
+      PacketContents::IntValue(i) => Ok(*i),
+      PacketContents::Operator(contents) => contents.evaluate(),
+    }
+  }
+
+  fn render(&self) -> String {
+    match &self.contents {
+      PacketContents::IntValue(i) => format!("{}", i),
+      PacketContents::Operator(contents) => contents.render(),
+    }
+  }
 }
 
 struct PacketParser {
@@ -80,7 +232,20 @@ impl PacketParser {
     Ok(PacketContents::IntValue(value))
   }
 
-  fn parse_operator_contents(&mut self) -> Result<PacketContents, String> {
+  fn parse_operator_type(&self, type_code: i64) -> Result<Operator, String> {
+    match type_code {
+      OPERATOR_SUM => Ok(Operator::Sum),
+      OPERATOR_PRODUCT => Ok(Operator::Product),
+      OPERATOR_MIN => Ok(Operator::Minimum),
+      OPERATOR_MAX => Ok(Operator::Maximum),
+      OPERATOR_GT => Ok(Operator::GreaterThan),
+      OPERATOR_LT => Ok(Operator::LessThan),
+      OPERATOR_EQ => Ok(Operator::Equal),
+      _ => Err(format!("Unrecognized operator code")),
+    }
+  }
+
+  fn parse_operator_contents(&mut self, type_code: i64) -> Result<PacketContents, String> {
     let length_indicator = self.serve_int(LEN_LENGTH_INDICATOR)?;
     let mut sub_packets: Vec<Packet> = Vec::new();
     if length_indicator == LENGTH_INDICATOR_BITS {
@@ -96,7 +261,10 @@ impl PacketParser {
       }
     }
 
-    Ok(PacketContents::Operator(sub_packets))
+    Ok(PacketContents::Operator(OperatorPacket {
+      operator: self.parse_operator_type(type_code)?,
+      sub_packets,
+    }))
   }
 
   fn parse(&mut self) -> Result<Packet, String> {
@@ -105,7 +273,7 @@ impl PacketParser {
     let contents = if type_code == TYPE_CODE_VALUE {
       self.parse_int_value_contents()?
     } else {
-      self.parse_operator_contents()?
+      self.parse_operator_contents(type_code)?
     };
 
     Ok(Packet {
@@ -119,8 +287,8 @@ impl PacketParser {
 fn sum_packet_versions(packet: &Packet) -> i64 {
   let mut result = packet.version_number;
   match &packet.contents {
-    PacketContents::Operator(sub_packets) => {
-      for p in sub_packets {
+    PacketContents::Operator(operator_packet) => {
+      for p in &operator_packet.sub_packets {
         result += sum_packet_versions(p);
       }
     }
@@ -185,7 +353,20 @@ pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let hex_raw = read_hex_packet(&context)?;
   let bits = hex_to_bits(hex_raw)?;
   let root_packet = PacketParser::new(bits).parse()?;
-  let result = sum_packet_versions(&root_packet);
-  writer.write(|| format!("Sum of all packet versions: {}", result));
-  Ok(format!("{}", result))
+  if context.config.print_expression.unwrap_or(false) {
+    writer.write(|| root_packet.render());
+  }
+  match context.config.compute.as_str() {
+    "versions_sum" => {
+      let result = sum_packet_versions(&root_packet);
+      writer.write(|| format!("Sum of all packet versions: {}", result));
+      Ok(format!("{}", result))
+    }
+    "evaluation" => {
+      let result = root_packet.evaluate()?;
+      writer.write(|| format!("Evaluation of packet comes to: {}", result));
+      Ok(format!("{}", result))
+    }
+    _ => Err(format!("Unrecognized compute option")),
+  }
 }
