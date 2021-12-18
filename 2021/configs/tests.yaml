@@ -98,5 +98,8 @@ tests:
   - name: Day 17 Part 1 | Trick Shot
     config: day17/part1.yaml
     expected_result: 5995
+  - name: Day 17 Part 2 | All Possible Trick Shot
+    config: day17/part2.yaml
+    expected_result: 3202
 config:
   show_errors: true

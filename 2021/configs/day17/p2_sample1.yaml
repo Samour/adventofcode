@@ -5,4 +5,5 @@ target_x:
 target_y:
   min: -10
   max: -5
-mode: max_y
+mode: count_intersections
+debug: false

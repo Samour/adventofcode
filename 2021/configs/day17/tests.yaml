@@ -5,6 +5,12 @@ tests:
   - name: Part 1
     config: part1.yaml
     expected_result: 5995
+  - name: Part 2 Sample 1
+    config: p2_sample1.yaml
+    expected_result: 112
+  - name: Part 2
+    config: part2.yaml
+    expected_result: 3202
 config:
   show_errors: true
   enable_printing: true

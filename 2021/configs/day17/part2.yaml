@@ -5,4 +5,4 @@ target_x:
 target_y:
   min: -110
   max: -69
-mode: max_y
+mode: count_intersections
