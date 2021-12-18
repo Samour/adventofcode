@@ -95,5 +95,8 @@ tests:
   - name: Day 16 Part 2 | Packet Decoder Evaluation
     config: day16/part2.yaml
     expected_result: 333794664059
+  - name: Day 17 Part 1 | Trick Shot
+    config: day17/part1.yaml
+    expected_result: 5995
 config:
   show_errors: true

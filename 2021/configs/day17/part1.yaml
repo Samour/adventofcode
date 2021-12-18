@@ -1,0 +1,7 @@
+implementation: day17
+target_x:
+  min: 156
+  max: 202
+target_y:
+  min: -110
+  max: -69
