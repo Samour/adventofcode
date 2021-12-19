@@ -1,2 +1,3 @@
 implementation: day18
 numbers_file: sample7.txt
+mode: add_all

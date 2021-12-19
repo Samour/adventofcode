@@ -17,27 +17,29 @@ use sfn::{plus, SnailFishNumber};
 #[derive(Deserialize)]
 struct Config {
   numbers_file: String,
+  mode: String,
   print_each_addition: Option<bool>,
   trace_reductions: Option<bool>,
 }
 
-fn parse_numbers(raw_numbers: &str) -> Result<VecDeque<Rc<RefCell<SnailFishNumber>>>, String> {
+fn parse_numbers(
+  raw_numbers: Vec<String>,
+) -> Result<VecDeque<Rc<RefCell<SnailFishNumber>>>, String> {
   let mut result: VecDeque<Rc<RefCell<SnailFishNumber>>> = VecDeque::new();
-  for line in raw_numbers.split("\n") {
-    if line.trim().len() > 0 {
-      result.push_back(parse(String::from(line.trim()))?);
-    }
+  for line in raw_numbers {
+    result.push_back(parse(String::from(line))?);
   }
 
   Ok(result)
 }
 
 fn add_numbers(
-  mut numbers: VecDeque<Rc<RefCell<SnailFishNumber>>>,
+  numbers: Vec<String>,
   writer: &Writer,
   print_each_addition: bool,
   trace_reductions: bool,
 ) -> Result<String, String> {
+  let mut numbers = parse_numbers(numbers)?;
   let mut base_number = numbers
     .pop_front()
     .ok_or_else(|| format!("No numbers in file"))?;
@@ -63,14 +65,60 @@ fn add_numbers(
   Ok(format!("{}", magnitude))
 }
 
+fn compute_magnitude(
+  one: Rc<RefCell<SnailFishNumber>>,
+  two: Rc<RefCell<SnailFishNumber>>,
+  writer: &Writer,
+) -> Result<i32, String> {
+  let result = plus(one, two);
+  reduce(Rc::clone(&result), false, writer)?;
+  let result = result.borrow().content.magnitude();
+  Ok(result)
+}
+
+fn find_max_magnitude(numbers: Vec<String>, writer: &Writer) -> Result<String, String> {
+  let mut max_mag: i32 = 0;
+  for i in 0..numbers.len() {
+    for j in 0..numbers.len() {
+      if i == j {
+        continue;
+      }
+      let number1 = parse(numbers[i].clone())?;
+      let number2 = parse(numbers[j].clone())?;
+      let mag = compute_magnitude(number1, number2, writer)?;
+      if mag > max_mag {
+        max_mag = mag;
+      }
+    }
+  }
+  writer.write(|| format!("Maximum magnitude found: {}", max_mag));
+
+  Ok(format!("{}", max_mag))
+}
+
+fn compute_numbers(
+  numbers: Vec<String>,
+  config: &Config,
+  writer: &Writer,
+) -> Result<String, String> {
+  match config.mode.as_str() {
+    "add_all" => add_numbers(
+      numbers,
+      writer,
+      config.print_each_addition.unwrap_or(false),
+      config.trace_reductions.unwrap_or(false),
+    ),
+    "max_pair" => find_max_magnitude(numbers, writer),
+    _ => Err(format!("Unrecognized mode")),
+  }
+}
+
 pub fn main(factory: ContextFactory, writer: Writer) -> Result<String, String> {
   let context: Context<Config> = factory.create()?;
-  let numbers_raw = context.load_data(&context.config.numbers_file)?;
-  let numbers = parse_numbers(&numbers_raw)?;
-  add_numbers(
-    numbers,
-    &writer,
-    context.config.print_each_addition.unwrap_or(false),
-    context.config.trace_reductions.unwrap_or(false),
-  )
+  let numbers_raw: Vec<String> = context
+    .load_data(&context.config.numbers_file)?
+    .split("\n")
+    .map(String::from)
+    .collect();
+  compute_numbers(numbers_raw, &context.config, &writer)
 }

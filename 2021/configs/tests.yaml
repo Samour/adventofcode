@@ -104,5 +104,8 @@ tests:
   - name: Day 18 Part 1 | Snailfish
     config: day18/part1.yaml
     expected_result: 3987
+  - name: Day 18 Part 1 | Snailfish max sum
+    config: day18/part2.yaml
+    expected_result: 4500
 config:
   show_errors: true

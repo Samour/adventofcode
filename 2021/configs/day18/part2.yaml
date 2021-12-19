@@ -1,3 +1,3 @@
 implementation: day18
 numbers_file: data.txt
-mode: add_all
+mode: max_pair

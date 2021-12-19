@@ -1,4 +1,5 @@
 implementation: day18
 numbers_file: sample4.txt
+mode: add_all
 # print_each_addition: true
 # trace_reductions: true
