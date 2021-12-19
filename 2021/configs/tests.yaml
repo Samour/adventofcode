@@ -101,5 +101,8 @@ tests:
   - name: Day 17 Part 2 | All Possible Trick Shot
     config: day17/part2.yaml
     expected_result: 3202
+  - name: Day 18 Part 1 | Snailfish
+    config: day18/part1.yaml
+    expected_result: 3987
 config:
   show_errors: true

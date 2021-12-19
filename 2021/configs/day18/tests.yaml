@@ -1,0 +1,39 @@
+tests:
+  - name: Part 1 Sample 1
+    config: p1_sample1.yaml
+    expected_result: 445
+  - name: Part 1 Sample 2
+    config: p1_sample2.yaml
+    expected_result: 791
+  - name: Part 1 Sample 3
+    config: p1_sample3.yaml
+    expected_result: 1137
+  - name: Part 1 Sample 4
+    config: p1_sample4.yaml
+    expected_result: 3488
+  - name: Part 1 Sample 5
+    config: p1_sample5.yaml
+    expected_result: 143
+  - name: Part 1 Sample 6
+    config: p1_sample6.yaml
+    expected_result: 1384
+  - name: Part 1 Sample 7
+    config: p1_sample7.yaml
+    expected_result: 445
+  - name: Part 1 Sample 8
+    config: p1_sample8.yaml
+    expected_result: 791
+  - name: Part 1 Sample 9
+    config: p1_sample9.yaml
+    expected_result: 1137
+  - name: Part 1 Sample 10
+    config: p1_sample10.yaml
+    expected_result: 3488
+  - name: Part 1 Sample 11
+    config: p1_sample11.yaml
+    expected_result: 4140
+  - name: Part 1
+    config: part1.yaml
+    expected_result: 3987
+config:
+  show_errors: true
