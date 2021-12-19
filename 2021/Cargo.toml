@@ -10,3 +10,4 @@ edition = "2018"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
 regex = "1"
+ndarray = "0.15.4"

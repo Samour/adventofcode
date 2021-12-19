@@ -28,6 +28,7 @@ fn select_impl(name: &str) -> Option<fn(factory: ContextFactory, writer: Writer)
     "day16" => Some(crate::day16::main),
     "day17" => Some(crate::day17::main),
     "day18" => Some(crate::day18::main),
+    "day19" => Some(crate::day19::main),
     _ => None,
   }
 }
