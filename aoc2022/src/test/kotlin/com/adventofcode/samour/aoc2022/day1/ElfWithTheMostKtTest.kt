@@ -18,4 +18,20 @@ internal class ElfWithTheMostKtTest {
 
         assertThat(elf).isEqualTo(ElfCalorieSupply(69_912))
     }
+
+    @Test
+    fun `select top 3 elves from sample file`() {
+        val totalCalories = selectElvesWithTheMost("sample.txt", 3)
+            .sumOf { it.calories }
+
+        assertThat(totalCalories).isEqualTo(45_000)
+    }
+
+    @Test
+    fun `select top 3 elves from data file`() {
+        val totalCalories = selectElvesWithTheMost("data.txt", 3)
+            .sumOf { it.calories }
+
+        assertThat(totalCalories).isEqualTo(208_180)
+    }
 }
