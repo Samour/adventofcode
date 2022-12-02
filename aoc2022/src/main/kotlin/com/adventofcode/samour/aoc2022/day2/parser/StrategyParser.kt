@@ -2,7 +2,9 @@ package com.adventofcode.samour.aoc2022.day2.parser
 
 import com.adventofcode.samour.aoc2022.day2.RPSShape.*
 
-fun parseStrategy(tokenisedRound: TokenisedRound): RoundStrategy = RoundStrategy(
+typealias StrategyParser = (tokenisedRound: TokenisedRound) -> RoundStrategy
+
+fun parseStrategyByShape(tokenisedRound: TokenisedRound): RoundStrategy = RoundStrategy(
     opponentShape = when (tokenisedRound.opponentShapeToken) {
         "A" -> ROCK
         "B" -> PAPER
