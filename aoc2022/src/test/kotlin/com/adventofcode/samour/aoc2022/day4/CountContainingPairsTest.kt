@@ -18,4 +18,18 @@ internal class CountContainingPairsTest {
 
         assertThat(result).isEqualTo(532)
     }
+
+    @Test
+    fun `should count overlapping pairs in sample file`() {
+        val result = countOverlappingPairs("sample.txt", ::pairOverlaps)
+
+        assertThat(result).isEqualTo(4)
+    }
+
+    @Test
+    fun `should count overlapping pairs in data file`() {
+        val result = countOverlappingPairs("data.txt", ::pairOverlaps)
+
+        assertThat(result).isEqualTo(-1)
+    }
 }

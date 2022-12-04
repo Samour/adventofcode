@@ -7,3 +7,6 @@ fun pairFullyContained(pair: CleaningPair) =
 
 private fun CampSection.contains(other: CampSection) =
     rangeStart <= other.rangeStart && rangeEnd >= other.rangeEnd
+
+fun pairOverlaps(pair: CleaningPair) =
+    pair.first.rangeStart <= pair.second.rangeEnd && pair.first.rangeEnd >= pair.second.rangeStart
