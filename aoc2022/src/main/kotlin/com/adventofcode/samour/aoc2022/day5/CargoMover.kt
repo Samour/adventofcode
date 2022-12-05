@@ -2,20 +2,25 @@ package com.adventofcode.samour.aoc2022.day5
 
 typealias CargoMover = (CargoStructure, MoveInstruction) -> CargoStructure
 
-fun moveOneAtATime(cargoStructure: CargoStructure, moveInstruction: MoveInstruction): CargoStructure =
-    (1..moveInstruction.quantity).fold(cargoStructure) { increment, _ ->
-        increment.applySingleMove(moveInstruction)
+fun moveOneAtATime(cargoStructure: CargoStructure, moveInstruction: MoveInstruction): CargoStructure {
+    val singleMoveInstruction = MoveInstruction(
+        source = moveInstruction.source,
+        destination = moveInstruction.destination,
+        quantity = 1,
+    )
+    return (1..moveInstruction.quantity).fold(cargoStructure) { increment, _ ->
+        moveMultipleAtOnce(increment, singleMoveInstruction)
     }
+}
 
-private fun CargoStructure.applySingleMove(moveInstruction: MoveInstruction): CargoStructure =
+fun moveMultipleAtOnce(cargoStructure: CargoStructure, moveInstruction: MoveInstruction): CargoStructure =
     CargoStructure(
-        stacks = stacks.mapIndexed { i, containers ->
-            if (i == moveInstruction.source) {
-                containers.subList(1, containers.size)
-            } else if (i == moveInstruction.destination) {
-                listOf(stacks[moveInstruction.source][0]) + containers
-            } else {
-                containers
+        stacks = cargoStructure.stacks.mapIndexed { i, containers ->
+            when (i) {
+                moveInstruction.source -> containers.subList(moveInstruction.quantity, containers.size)
+                moveInstruction.destination -> cargoStructure.stacks[moveInstruction.source]
+                    .subList(0, moveInstruction.quantity) + containers
+                else -> containers
             }
         }
     )
