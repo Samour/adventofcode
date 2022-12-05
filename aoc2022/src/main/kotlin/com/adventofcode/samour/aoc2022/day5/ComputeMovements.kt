@@ -3,11 +3,11 @@ package com.adventofcode.samour.aoc2022.day5
 import com.adventofcode.samour.aoc2022.day5.parse.parseCargoSpec
 import com.adventofcode.samour.aoc2022.resources.ResourceReader.readResource
 
-fun computeMovements(fname: String): String {
+fun computeMovements(fname: String, cargoMover: CargoMover): String {
     val (initialPosition, movements) = parseCargoSpec(readResource("day5/$fname"))
-    return movements.fold(initialPosition) { structure, moveInstruction ->
-        structure.applyMoveInstruction(moveInstruction)
-    }.let { composeTopContainers(it) }
+    return composeTopContainers(
+        movements.fold(initialPosition, cargoMover)
+    )
 }
 
 private fun composeTopContainers(structure: CargoStructure): String =

@@ -7,14 +7,14 @@ internal class ComputeMovementsTest {
 
     @Test
     fun `should compute final position for sample data`() {
-        val result = computeMovements("sample.txt")
+        val result = computeMovements("sample.txt", ::moveOneAtATime)
 
         assertThat(result).isEqualTo("CMZ")
     }
 
     @Test
     fun `should compute final position for problem data`() {
-        val result = computeMovements("data.txt")
+        val result = computeMovements("data.txt", ::moveOneAtATime)
 
         assertThat(result).isEqualTo("FJSRQCFTN")
     }

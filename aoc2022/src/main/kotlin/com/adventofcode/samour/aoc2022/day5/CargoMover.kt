@@ -1,7 +1,9 @@
 package com.adventofcode.samour.aoc2022.day5
 
-fun CargoStructure.applyMoveInstruction(moveInstruction: MoveInstruction): CargoStructure =
-    (1..moveInstruction.quantity).fold(this) { increment, _ ->
+typealias CargoMover = (CargoStructure, MoveInstruction) -> CargoStructure
+
+fun moveOneAtATime(cargoStructure: CargoStructure, moveInstruction: MoveInstruction): CargoStructure =
+    (1..moveInstruction.quantity).fold(cargoStructure) { increment, _ ->
         increment.applySingleMove(moveInstruction)
     }
 
