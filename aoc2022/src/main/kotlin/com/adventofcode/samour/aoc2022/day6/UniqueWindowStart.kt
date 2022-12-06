@@ -35,8 +35,8 @@ private data class CharWindow(
     }
 }
 
-fun findUniqueWindowStart(data: String): Int {
-    data.foldIndexed(CharWindow.createWindow(4)) { i, window, c ->
+fun findUniqueWindowStart(data: String, windowSize: Int): Int {
+    data.foldIndexed(CharWindow.createWindow(windowSize)) { i, window, c ->
         window.advanceWindow(c).also {
             if (it.charCount.size == it.windowSize) {
                 return i + 1
@@ -44,5 +44,5 @@ fun findUniqueWindowStart(data: String): Int {
         }
     }
 
-    throw IllegalArgumentException("Could not find a sequence of 4 unique characters")
+    throw IllegalArgumentException("Could not find a sequence of $windowSize unique characters")
 }
