@@ -1,12 +1,12 @@
 package com.adventofcode.samour.aoc2022.day6
 
-private data class PacketWindow(
+private data class CharWindow(
     val window: List<Char>,
     val charCount: Map<Char, Int>,
     val windowSize: Int,
 ) {
 
-    fun pushChar(char: Char): PacketWindow {
+    fun advanceWindow(char: Char): CharWindow {
         var window = this.window + listOf(char)
         val charCount = this.charCount.toMutableMap()
         charCount[char] = (charCount[char] ?: 0) + 1
@@ -19,7 +19,7 @@ private data class PacketWindow(
             window = window.subList(1, window.size)
         }
 
-        return PacketWindow(
+        return CharWindow(
             window = window,
             charCount = charCount.toMap(),
             windowSize = windowSize,
@@ -27,7 +27,7 @@ private data class PacketWindow(
     }
 
     companion object {
-        fun createWindow(windowSize: Int) = PacketWindow(
+        fun createWindow(windowSize: Int) = CharWindow(
             window = emptyList(),
             charCount = emptyMap(),
             windowSize = windowSize,
@@ -35,9 +35,9 @@ private data class PacketWindow(
     }
 }
 
-fun findPacketStart(data: String): Int {
-    data.foldIndexed(PacketWindow.createWindow(4)) { i, window, c ->
-        window.pushChar(c).also {
+fun findUniqueWindowStart(data: String): Int {
+    data.foldIndexed(CharWindow.createWindow(4)) { i, window, c ->
+        window.advanceWindow(c).also {
             if (it.charCount.size == it.windowSize) {
                 return i + 1
             }
