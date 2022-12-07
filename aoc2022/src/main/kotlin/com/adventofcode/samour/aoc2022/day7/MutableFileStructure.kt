@@ -9,7 +9,9 @@ sealed class MutableFileStructure {
         val contents: MutableMap<String, MutableFileStructure>,
     ) : MutableFileStructure() {
 
-        fun pushItem(item: MutableFileStructure) = contents.put(item.name, item)
+        fun pushItem(item: MutableFileStructure) {
+            contents.putIfAbsent(item.name, item)
+        }
     }
 
     data class File(

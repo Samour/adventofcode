@@ -29,10 +29,10 @@ private fun translateDirectoryMember(line: String): DirectoryMember {
         throw IllegalArgumentException("Wrong number of elements in directory member '$line'")
     }
 
-    if (parts[0] == "dir") {
-        return DirectoryMember.Directory(parts[1])
+    return if (parts[0] == "dir") {
+        DirectoryMember.Directory(parts[1])
     } else {
-        return DirectoryMember.File(
+        DirectoryMember.File(
             name = parts[1],
             size = parts[0].toInt(),
         )
