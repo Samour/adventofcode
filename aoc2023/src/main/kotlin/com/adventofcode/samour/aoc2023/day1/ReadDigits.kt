@@ -28,7 +28,7 @@ private val numberWordMap = mapOf(
     "seven" to 7,
     "eight" to 8,
     "nine" to 9,
-    "zero" to 0,
+    "zero" to 0
 )
 private val numberWordRegex = numberWordMap.keys.joinToString(separator = "|").toRegex()
 
