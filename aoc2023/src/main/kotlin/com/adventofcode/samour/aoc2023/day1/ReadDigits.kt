@@ -33,17 +33,13 @@ private val numberWordMap = mapOf(
 private val numberWordRegex = numberWordMap.keys.joinToString(separator = "|").toRegex()
 
 fun filterDigitsAndWords(line: String): List<Int> {
-    val result = mutableListOf<Int>()
-    var i = 0
-    while (i < line.length) {
+    return line.indices.mapNotNull { i ->
         if (line[i].isDigit()) {
-            result.add(line[i].digitToInt())
+            line[i].digitToInt()
         } else {
-            val numberWord = numberWordRegex.matchAt(line, i)
-            numberWord?.value?.let { result.add(numberWordMap[it]!!) }
+            numberWordRegex.matchAt(line, i)
+                    ?.value
+                    ?.let { numberWordMap[it] }
         }
-        i++
     }
-
-    return result
 }
