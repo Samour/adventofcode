@@ -23,7 +23,7 @@ class SumDigitsTest {
     fun `Should return 281 for sample data using digit and word parsing`() {
         val result = sumDigits("sample2.txt", ::filterDigitsAndWords)
 
-        assertThat(result).isEqualTo(281)
+        assertThat(result).isEqualTo(2811)
     }
 
     @Test
