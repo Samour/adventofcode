@@ -17,3 +17,33 @@ fun filterOnlyDigits(line: String): List<Int> =
                 .filter { it.isDigit() }
                 .map { it.digitToInt() }
                 .toList()
+
+private val numberWordMap = mapOf(
+        "one" to 1,
+        "two" to 2,
+        "three" to 3,
+        "four" to 4,
+        "five" to 5,
+        "six" to 6,
+        "seven" to 7,
+        "eight" to 8,
+        "nine" to 9,
+        "zero" to 0,
+)
+private val numberWordRegex = numberWordMap.keys.joinToString(separator = "|").toRegex()
+
+fun filterDigitsAndWords(line: String): List<Int> {
+    val result = mutableListOf<Int>()
+    var i = 0
+    while (i < line.length) {
+        if (line[i].isDigit()) {
+            result.add(line[i].digitToInt())
+        } else {
+            val numberWord = numberWordRegex.matchAt(line, i)
+            numberWord?.value?.let { result.add(numberWordMap[it]!!) }
+        }
+        i++
+    }
+
+    return result
+}
