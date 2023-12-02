@@ -26,7 +26,7 @@ class AggregateViableGamesTest {
     }
 
     @Test
-    fun `Should return X for problem dataset and cubeset`() {
+    fun `Should return 2061 for problem dataset and cubeset`() {
         val cubeset = CubeCounts(
             counts = mapOf(
                 RED to 12,
@@ -37,5 +37,19 @@ class AggregateViableGamesTest {
         val result = aggregateViableGames("data.txt", cubeset)
 
         assertThat(result.gameIdSum).isEqualTo(2061)
+    }
+
+    @Test
+    fun `Power of min sample cubesets should be 2286`() {
+        val powerSum = minViableCubeset("sample.txt")
+
+        assertThat(powerSum).isEqualTo(2286)
+    }
+
+    @Test
+    fun `Power of min data cubesets should be 72596`() {
+        val powerSum = minViableCubeset("data.txt")
+
+        assertThat(powerSum).isEqualTo(72596)
     }
 }
