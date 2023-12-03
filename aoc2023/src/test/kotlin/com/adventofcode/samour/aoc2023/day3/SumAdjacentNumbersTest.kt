@@ -13,9 +13,23 @@ class SumAdjacentNumbersTest {
     }
 
     @Test
-    fun `Should return X for problem data`() {
+    fun `Should return 550064 for problem data`() {
         val result = sumAdjacentNumbers("data.txt")
 
-        assertThat(result).isEqualTo(-1) // 550064
+        assertThat(result).isEqualTo(550064)
+    }
+
+    @Test
+    fun `Should return 467835 for gear ratios of sample data`() {
+        val result = sumGearRatios("sample.txt")
+
+        assertThat(result).isEqualTo(467835)
+    }
+
+    @Test
+    fun `Should return 85010461 for gear ratios of sample data`() {
+        val result = sumGearRatios("data.txt")
+
+        assertThat(result).isEqualTo(85010461)
     }
 }
