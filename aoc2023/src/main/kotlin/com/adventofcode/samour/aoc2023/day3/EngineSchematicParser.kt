@@ -59,7 +59,7 @@ private class EngineSchematicParser(private val source: BufferedReader) {
                     value = number,
                     startPosition = numberX to y,
                     numLength = numberLength,
-                )
+                ),
             )
         }
     }
