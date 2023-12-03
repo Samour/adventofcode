@@ -17,26 +17,7 @@ private class EngineSchematicParser(private val source: BufferedReader) {
     fun parse(): EngineSchematic {
         resetNumber()
         source.readLines().forEachIndexed { y, row ->
-            resetNumber()
-            row.forEachIndexed { x, c ->
-                if (c.isDigit()) {
-                    if (numberX == -1) {
-                        numberX = x
-                    }
-                    number *= 10
-                    number += c.digitToInt()
-                    numberLength += 1
-                } else {
-                    if (numberLength > 0) {
-                        pushNumber(y)
-                        resetNumber()
-                    }
-                    if (c != '.') {
-                        symbols[x to y] = c
-                    }
-                }
-            }
-
+            row.forEachIndexed { x, c -> processChar(x, y, c) }
             pushNumber(y)
         }
 
@@ -52,6 +33,30 @@ private class EngineSchematicParser(private val source: BufferedReader) {
         number = 0
     }
 
+    private fun processChar(x: Int, y: Int, c: Char) {
+        if (c.isDigit()) {
+            processDigitChar(x, c)
+        } else {
+            processNonDigitChar(x, y, c)
+        }
+    }
+
+    private fun processDigitChar(x: Int, c: Char) {
+        if (numberX == -1) {
+            numberX = x
+        }
+        number *= 10
+        number += c.digitToInt()
+        numberLength += 1
+    }
+
+    private fun processNonDigitChar(x: Int, y: Int, c: Char) {
+        pushNumber(y)
+        if (c != '.') {
+            symbols[x to y] = c
+        }
+    }
+
     private fun pushNumber(y: Int) {
         if (numberLength > 0) {
             numbers.add(
@@ -61,6 +66,7 @@ private class EngineSchematicParser(private val source: BufferedReader) {
                     numLength = numberLength,
                 ),
             )
+            resetNumber()
         }
     }
 }
