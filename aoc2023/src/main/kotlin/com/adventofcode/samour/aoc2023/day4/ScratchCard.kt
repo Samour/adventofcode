@@ -7,8 +7,12 @@ data class ScratchCard(
     val winningNumbers: Set<Int>,
     val numbers: List<Int>, // Just in case there are duplicates
 ) {
+    val winningCount: Int by lazy {
+        numbers.count(winningNumbers::contains)
+    }
+
     val score: Int by lazy {
-        val winningCount = numbers.count(winningNumbers::contains)
+
         if (winningCount == 0) {
             0
         } else {

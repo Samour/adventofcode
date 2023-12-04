@@ -31,4 +31,31 @@ class CountWinningCardsTest {
 
         assertThat(result).isEqualTo(17782)
     }
+
+    @Test
+    fun `Should return 30 cards for sample dataset`() {
+        val copies = countCascadedCopies("sample.txt")
+
+        val totalCopies = copies.values.sum()
+        assertSoftly { s ->
+            s.assertThat(copies).isEqualTo(
+                mapOf(
+                    1 to 1,
+                    2 to 2,
+                    3 to 4,
+                    4 to 8,
+                    5 to 14,
+                    6 to 1,
+                ),
+            )
+            s.assertThat(totalCopies).isEqualTo(30)
+        }
+    }
+
+    @Test
+    fun `Should return 8477787 cards for problem dataset`() {
+        val result = countCascadedCopies("data.txt").values.sum()
+
+        assertThat(result).isEqualTo(8477787)
+    }
 }
