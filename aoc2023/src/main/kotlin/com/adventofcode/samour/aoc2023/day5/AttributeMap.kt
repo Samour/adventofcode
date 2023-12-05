@@ -34,7 +34,7 @@ data class AttributeMapPortion(
     val rangeSize: BigInteger,
 ) {
 
-    override fun toString(): String = "srcRange = [$srcStart, ${srcStart + rangeSize})"
+    override fun toString(): String = "destRange = [${srcStart + offset}, ${srcStart + offset + rangeSize})"
 
     fun convertValue(source: BigInteger): BigInteger? = (source + offset).takeIf {
         source >= srcStart && source < srcStart + rangeSize

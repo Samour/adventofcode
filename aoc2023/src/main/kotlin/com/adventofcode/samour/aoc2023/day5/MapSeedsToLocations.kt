@@ -3,16 +3,39 @@ package com.adventofcode.samour.aoc2023.day5
 import com.adventofcode.samour.aoc2023.resources.ResourceReader.readResource
 import java.math.BigInteger
 
-fun loadMaps(fname: String) = readResource("day5/$fname").use { file ->
-    file.parseAttributeMaps()
-}
+fun mapSeedsToLocations(fname: String, collapseMaps: Boolean): Map<BigInteger, BigInteger> =
+    readResource("day5/$fname").use { file ->
+        val plantingDetails = file.parseAttributeMaps().let {
+            if (collapseMaps) {
+                it.copy(attributeMapChain = collapseMaps(it.attributeMapChain))
+            } else {
+                it
+            }
+        }
 
-fun mapSeedsToLocations(plantingDetails: PlantingDetails): Map<BigInteger, BigInteger> {
-    return plantingDetails.seeds.associateWith {
-        plantingDetails.attributeMapChain.convertValue(
-            AttributeType.SEED,
-            it,
-            AttributeType.LOCATION,
-        )
+        plantingDetails.seeds.associateWith {
+            plantingDetails.attributeMapChain.convertValue(
+                AttributeType.SEED,
+                it,
+                AttributeType.LOCATION,
+            )
+        }
     }
-}
+
+fun findClosestLocationForSeedRanges(fname: String): BigInteger = readResource("day5/$fname")
+    .use { file ->
+        val plantingDetails = file.parseAttributeMaps().let {
+            it.copy(attributeMapChain = collapseMaps(it.attributeMapChain))
+        }
+
+        plantingDetails.attributeMapChain
+            .maps[AttributeType.SEED]!!
+            .portions
+            .sortedBy {
+                it.srcStart + it.offset
+            }.first { range ->
+                plantingDetails.seedRanges.any { (seedLower, seedUpper) ->
+                    range.srcStart < seedUpper && range.srcStart + range.rangeSize > seedLower
+                }
+            }.let { it.srcStart + it.offset }
+    }

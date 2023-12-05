@@ -11,17 +11,7 @@ class MapSeedsToLocationsTest {
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun `Should return correct mappings for seeds`(useCollapsedMaps: Boolean) {
-        val plantingDetails = loadMaps("sample.txt").let {
-            if (useCollapsedMaps) {
-                it.copy(
-                    attributeMapChain = collapseMaps(it.attributeMapChain),
-                )
-            } else {
-                it
-            }
-        }
-
-        val result = mapSeedsToLocations(plantingDetails)
+        val result = mapSeedsToLocations("sample.txt", useCollapsedMaps)
         val minLocation = result.values.min()
 
         assertSoftly { s ->
@@ -40,18 +30,22 @@ class MapSeedsToLocationsTest {
     @ParameterizedTest
     @ValueSource(booleans = [false, true])
     fun `Should return 825516882 for problem dataset`(useCollapsedMaps: Boolean) {
-        val plantingDetails = loadMaps("data.txt").let {
-            if (useCollapsedMaps) {
-                it.copy(
-                    attributeMapChain = collapseMaps(it.attributeMapChain),
-                )
-            } else {
-                it
-            }
-        }
-
-        val result = mapSeedsToLocations(plantingDetails).values.min()
+        val result = mapSeedsToLocations("data.txt", useCollapsedMaps).values.min()
 
         assertThat(result).isEqualTo("825516882".toBigInteger())
+    }
+
+    @Test
+    fun `Should return 46 for range of seeds in sample dataset`() {
+        val result = findClosestLocationForSeedRanges("sample.txt")
+
+        assertThat(result).isEqualTo(46)
+    }
+
+    @Test
+    fun `Should return 136096660 for range of seeds in problem dataset`() {
+        val result = findClosestLocationForSeedRanges("data.txt")
+
+        assertThat(result).isEqualTo("136096660".toBigInteger())
     }
 }
