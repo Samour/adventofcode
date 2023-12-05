@@ -9,8 +9,7 @@ import org.junit.jupiter.params.provider.ValueSource
 class MapSeedsToLocationsTest {
 
     @ParameterizedTest
-//    @ValueSource(booleans = [false, true])
-    @ValueSource(booleans = [true])
+    @ValueSource(booleans = [false, true])
     fun `Should return correct mappings for seeds`(useCollapsedMaps: Boolean) {
         val plantingDetails = loadMaps("sample.txt").let {
             if (useCollapsedMaps) {

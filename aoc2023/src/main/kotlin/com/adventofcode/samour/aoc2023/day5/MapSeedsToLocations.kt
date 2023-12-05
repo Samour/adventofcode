@@ -34,109 +34,99 @@ private fun combineMaps(sourceMap: AttributeMap, destMap: AttributeMap): Attribu
     destRanges.sortBy { it.srcStart }
     val finalRanges = mutableListOf<AttributeMapPortion>()
 
-    while (sourceRanges.isNotEmpty()) {
-        val srcStart = sourceRanges.first().let { it.srcStart + it.offset }
-        val srcEnd = srcStart + sourceRanges.first().rangeSize
+    sourceRanges.forEach { srcRange ->
+        val srcOffset = srcRange.offset
+        var srcStart = srcRange.let { it.srcStart + it.offset }
+        val srcEnd = srcStart + srcRange.rangeSize
 
-        val overlappingDest = destRanges.firstOrNull {
+        destRanges.filter {
             srcStart < it.srcStart + it.rangeSize && srcEnd > it.srcStart
-        }
-        if (overlappingDest == null) {
-            finalRanges.add(sourceRanges.removeFirst())
-            continue
-        }
-
-        val destStart = overlappingDest.srcStart
-        val destEnd = destStart + overlappingDest.rangeSize
-
-        /**
-         * src:         |----------|
-         * dest:                |-------|
-         *
-         * src:         |----------|
-         * dest:            |---|
-         */
-        if (srcStart < destStart) {
-            val (portionToAdd, portionToCalculate) = sourceRanges.removeFirst()
-                .split(destStart - srcStart)
-            finalRanges.add(portionToAdd)
-            sourceRanges.add(0, portionToCalculate)
-
-            continue
-        }
-
-        /**
-         * src:              |----------|
-         * dest:        |-------|
-         *
-         * src:         |----|
-         * dest:     |----------|
-         */
-        if (destStart < srcStart) {
-            val (portionToAdd, portionToCalculate) = destRanges.removeFirst()
-                .split(srcStart - destStart)
-            finalRanges.add(portionToAdd)
-            sourceRanges.add(0, portionToCalculate)
-
-            continue
-        }
-
-        /**
-         * src:      |----------|
-         * dest:     |-------|
-         */
-        if (destEnd < srcEnd) {
-            val (srcPortionToAdd, portionToCalculate) = sourceRanges.removeFirst()
-                .split(destEnd - srcStart)
-            val destPortionToAdd = destRanges.removeFirst()
-            assert(srcPortionToAdd.rangeSize == destPortionToAdd.rangeSize)
+        }.forEach { downstream ->
+            if (srcStart < downstream.srcStart) {
+                finalRanges.add(
+                    AttributeMapPortion(
+                        srcStart = srcStart - srcOffset,
+                        offset = srcOffset,
+                        rangeSize = downstream.srcStart - srcStart,
+                    ),
+                )
+                srcStart = downstream.srcStart
+            }
             AttributeMapPortion(
-                srcStart = srcPortionToAdd.srcStart,
-                offset = srcPortionToAdd.offset + destPortionToAdd.offset,
-                rangeSize = srcPortionToAdd.rangeSize,
-            ).takeIf { it.offset != BigInteger.ZERO }
+                srcStart = srcStart - srcOffset,
+                offset = srcOffset + downstream.offset,
+                rangeSize = listOf(
+                    srcEnd - srcStart,
+                    downstream.srcStart + downstream.rangeSize - srcStart,
+                ).min(),
+            ).also {
+                srcStart += it.rangeSize
+            }.takeIf { it.offset != BigInteger.ZERO }
                 ?.let { finalRanges.add(it) }
-            sourceRanges.add(0, portionToCalculate)
-
-            continue
         }
 
-        /**
-         * src:      |----|
-         * dest:     |----------|
-         */
-        if (srcEnd < destEnd) {
-            val srcPortionToAdd = sourceRanges.removeFirst()
-            val (destPortionToAdd, portionToCalculate) = destRanges.removeFirst()
-                .split(srcPortionToAdd.rangeSize)
-            assert(srcPortionToAdd.rangeSize == destPortionToAdd.rangeSize)
-            AttributeMapPortion(
-                srcStart = srcPortionToAdd.srcStart,
-                offset = srcPortionToAdd.offset + destPortionToAdd.offset,
-                rangeSize = srcPortionToAdd.rangeSize,
-            ).takeIf { it.offset != BigInteger.ZERO }
-                ?.let { finalRanges.add(it) }
-            destRanges.add(0, portionToCalculate)
-
-            continue
+        if (srcStart < srcEnd) {
+            finalRanges.add(
+                AttributeMapPortion(
+                    srcStart = srcStart - srcOffset,
+                    offset = srcOffset,
+                    rangeSize = srcEnd - srcStart,
+                ),
+            )
         }
-
-        /**
-         * src:      |-------|
-         * dest:     |-------|
-         */
-        val srcPortionToAdd = sourceRanges.removeFirst()
-        val destPortionToAdd = destRanges.removeFirst()
-        assert(srcPortionToAdd.rangeSize == destPortionToAdd.rangeSize)
-        AttributeMapPortion(
-            srcStart = srcPortionToAdd.srcStart,
-            offset = srcPortionToAdd.offset + destPortionToAdd.offset,
-            rangeSize = srcPortionToAdd.rangeSize,
-        ).takeIf { it.offset != BigInteger.ZERO }
-            ?.let { finalRanges.add(it) }
     }
 
-    finalRanges.addAll(destRanges)
+    destRanges.forEach { dest ->
+        var destStart = dest.srcStart
+        val destEnd = destStart + dest.rangeSize
+        var lastEnd = BigInteger.ZERO
+        sourceRanges.map { it.srcStart to it.srcStart + it.rangeSize }
+            .forEach { (srcStart, srcEnd) ->
+                if (destStart >= destEnd || destStart > srcEnd) {
+                    // Pass
+                } else if (destEnd < srcStart) {
+                    finalRanges.add(
+                        dest.copy(
+                            srcStart = destStart,
+                            rangeSize = destEnd - destStart,
+                        ),
+                    )
+                    destStart = destEnd
+                } else if (destStart < srcStart) {
+                    finalRanges.add(
+                        dest.copy(
+                            srcStart = destStart,
+                            rangeSize = listOf(
+                                srcStart - destStart,
+                                destEnd - destStart,
+                            ).min(),
+                        ),
+                    )
+                }
+                if (destStart < srcEnd) {
+                    destStart = srcEnd
+                }
+                lastEnd = srcEnd
+            }
+
+        if (destEnd > destStart && destEnd > lastEnd) {
+            if (destStart > lastEnd) {
+                finalRanges.add(
+                    dest.copy(
+                        srcStart = destStart,
+                        rangeSize = destEnd - destStart,
+                    ),
+                )
+            } else {
+                finalRanges.add(
+                    dest.copy(
+                        srcStart = lastEnd,
+                        rangeSize = destEnd - lastEnd,
+                    ),
+                )
+            }
+        }
+    }
 
     return AttributeMap(
         destType = destMap.destType,

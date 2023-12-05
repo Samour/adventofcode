@@ -39,23 +39,6 @@ data class AttributeMapPortion(
     fun convertValue(source: BigInteger): BigInteger? = (source + offset).takeIf {
         source >= srcStart && source < srcStart + rangeSize
     }
-
-    fun split(firstRangeSize: BigInteger): Pair<AttributeMapPortion, AttributeMapPortion> {
-        assert(firstRangeSize > BigInteger.ZERO)
-        assert(firstRangeSize < rangeSize)
-        val first = copy(rangeSize = firstRangeSize)
-        val second = copy(
-            srcStart = srcStart + firstRangeSize,
-            rangeSize = rangeSize - firstRangeSize,
-        )
-
-        return first to second
-    }
-
-    fun combine(downstreamMap: AttributeMapPortion): List<AttributeMapPortion> {
-        val combination = mutableListOf<AttributeMapPortion>()
-        if ()
-    }
 }
 
 enum class AttributeType {
