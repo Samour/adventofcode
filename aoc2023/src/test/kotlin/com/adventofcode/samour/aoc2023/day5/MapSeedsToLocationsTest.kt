@@ -3,12 +3,26 @@ package com.adventofcode.samour.aoc2023.day5
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class MapSeedsToLocationsTest {
 
-    @Test
-    fun `Should return correct mappings for seeds`() {
-        val result = mapSeedsToLocations("sample.txt")
+    @ParameterizedTest
+//    @ValueSource(booleans = [false, true])
+    @ValueSource(booleans = [true])
+    fun `Should return correct mappings for seeds`(useCollapsedMaps: Boolean) {
+        val plantingDetails = loadMaps("sample.txt").let {
+            if (useCollapsedMaps) {
+                it.copy(
+                    attributeMapChain = collapseMaps(it.attributeMapChain),
+                )
+            } else {
+                it
+            }
+        }
+
+        val result = mapSeedsToLocations(plantingDetails)
         val minLocation = result.values.min()
 
         assertSoftly { s ->
@@ -24,10 +38,21 @@ class MapSeedsToLocationsTest {
         }
     }
 
-    @Test
-    fun `Should return 825516882 for problem dataset`() {
-        val result = mapSeedsToLocations("data.txt").values.min()
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun `Should return 825516882 for problem dataset`(useCollapsedMaps: Boolean) {
+        val plantingDetails = loadMaps("data.txt").let {
+            if (useCollapsedMaps) {
+                it.copy(
+                    attributeMapChain = collapseMaps(it.attributeMapChain),
+                )
+            } else {
+                it
+            }
+        }
 
-        assertThat(result).isEqualTo(825516882)
+        val result = mapSeedsToLocations(plantingDetails).values.min()
+
+        assertThat(result).isEqualTo("825516882".toBigInteger())
     }
 }

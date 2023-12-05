@@ -30,14 +30,26 @@ data class AttributeMap(
 
 data class AttributeMapPortion(
     val srcStart: BigInteger,
-    val destStart: BigInteger,
+    val offset: BigInteger,
     val rangeSize: BigInteger,
 ) {
 
-    private val offset = destStart - srcStart
+    override fun toString(): String = "srcRange = [$srcStart, ${srcStart + rangeSize})"
 
     fun convertValue(source: BigInteger): BigInteger? = (source + offset).takeIf {
         source >= srcStart && source < srcStart + rangeSize
+    }
+
+    fun split(firstRangeSize: BigInteger): Pair<AttributeMapPortion, AttributeMapPortion> {
+        assert(firstRangeSize > BigInteger.ZERO)
+        assert(firstRangeSize < rangeSize)
+        val first = copy(rangeSize = firstRangeSize)
+        val second = copy(
+            srcStart = srcStart + firstRangeSize,
+            rangeSize = rangeSize - firstRangeSize,
+        )
+
+        return first to second
     }
 }
 

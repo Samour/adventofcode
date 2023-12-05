@@ -5,6 +5,7 @@ import java.math.BigInteger
 
 data class PlantingDetails(
     val seeds: Set<BigInteger>,
+    val seedRanges: List<Pair<BigInteger, BigInteger>>,
     val attributeMapChain: AttributeMapChain,
 )
 
@@ -14,6 +15,7 @@ private val mapdefRegex = Regex("($attributePattern)-to-($attributePattern) map:
 
 fun BufferedReader.parseAttributeMaps(): PlantingDetails {
     lateinit var seeds: Set<BigInteger>
+    lateinit var seedRanges: List<Pair<BigInteger, BigInteger>>
     val attributeMaps = mutableMapOf<AttributeType, AttributeMap>()
 
     lateinit var srcType: AttributeType
@@ -22,9 +24,10 @@ fun BufferedReader.parseAttributeMaps(): PlantingDetails {
 
     readLines().forEach { line ->
         if (line.startsWith("seeds: ")) {
-            seeds = line.substring(7).split(" ")
+            val ordered = line.substring(7).split(" ")
                 .map { it.trim().toBigInteger() }
-                .toSet()
+            seedRanges = ordered.chunked(2) { (a, b) -> a to b}
+            seeds = ordered.toSet()
             return@forEach
         }
 
@@ -44,7 +47,7 @@ fun BufferedReader.parseAttributeMaps(): PlantingDetails {
             mapPortions.add(
                 AttributeMapPortion(
                     srcStart = srcStart,
-                    destStart = destStart,
+                    offset = destStart - srcStart,
                     rangeSize = rangeSize,
                 ),
             )
@@ -61,6 +64,7 @@ fun BufferedReader.parseAttributeMaps(): PlantingDetails {
 
     return PlantingDetails(
         seeds = seeds,
+        seedRanges = seedRanges,
         attributeMapChain = AttributeMapChain(attributeMaps),
     )
 }
