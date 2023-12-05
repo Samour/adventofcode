@@ -51,6 +51,11 @@ data class AttributeMapPortion(
 
         return first to second
     }
+
+    fun combine(downstreamMap: AttributeMapPortion): List<AttributeMapPortion> {
+        val combination = mutableListOf<AttributeMapPortion>()
+        if ()
+    }
 }
 
 enum class AttributeType {

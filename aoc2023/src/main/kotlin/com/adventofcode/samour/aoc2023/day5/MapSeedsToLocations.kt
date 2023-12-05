@@ -34,21 +34,20 @@ private fun combineMaps(sourceMap: AttributeMap, destMap: AttributeMap): Attribu
     destRanges.sortBy { it.srcStart }
     val finalRanges = mutableListOf<AttributeMapPortion>()
 
-    while (sourceRanges.isNotEmpty() && destRanges.isNotEmpty()) {
+    while (sourceRanges.isNotEmpty()) {
         val srcStart = sourceRanges.first().let { it.srcStart + it.offset }
         val srcEnd = srcStart + sourceRanges.first().rangeSize
-        val destStart = destRanges.first().srcStart
-        val destEnd = destStart + destRanges.first().rangeSize
 
-        if (srcEnd <= destStart) {
+        val overlappingDest = destRanges.firstOrNull {
+            srcStart < it.srcStart + it.rangeSize && srcEnd > it.srcStart
+        }
+        if (overlappingDest == null) {
             finalRanges.add(sourceRanges.removeFirst())
             continue
         }
 
-        if (destEnd <= srcStart) {
-            finalRanges.add(destRanges.removeFirst())
-            continue
-        }
+        val destStart = overlappingDest.srcStart
+        val destEnd = destStart + overlappingDest.rangeSize
 
         /**
          * src:         |----------|
@@ -137,7 +136,6 @@ private fun combineMaps(sourceMap: AttributeMap, destMap: AttributeMap): Attribu
             ?.let { finalRanges.add(it) }
     }
 
-    finalRanges.addAll(sourceRanges)
     finalRanges.addAll(destRanges)
 
     return AttributeMap(
