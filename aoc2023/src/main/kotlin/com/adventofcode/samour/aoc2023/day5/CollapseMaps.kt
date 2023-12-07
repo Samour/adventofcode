@@ -2,7 +2,6 @@ package com.adventofcode.samour.aoc2023.day5
 
 import java.math.BigInteger
 
-
 fun collapseMaps(maps: AttributeMapChain): AttributeMapChain {
     val finalMaps = maps.maps.toMutableMap()
     while (finalMaps[AttributeType.SEED]!!.destType != AttributeType.LOCATION) {

@@ -85,7 +85,7 @@ data class CardHand(
 
     private fun isTwoPair(): Boolean {
         if (!isPair()) {
-            return false;
+            return false
         }
 
         var remainingJokers = jokerCount

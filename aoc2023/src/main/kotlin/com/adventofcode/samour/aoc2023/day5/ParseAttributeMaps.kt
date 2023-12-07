@@ -26,7 +26,7 @@ fun BufferedReader.parseAttributeMaps(): PlantingDetails {
         if (line.startsWith("seeds: ")) {
             val ordered = line.substring(7).split(" ")
                 .map { it.trim().toBigInteger() }
-            seedRanges = ordered.chunked(2) { (a, b) -> a to a + b}
+            seedRanges = ordered.chunked(2) { (a, b) -> a to a + b }
             seeds = ordered.toSet()
             return@forEach
         }
