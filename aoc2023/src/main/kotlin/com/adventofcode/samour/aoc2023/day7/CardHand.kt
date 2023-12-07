@@ -2,6 +2,7 @@ package com.adventofcode.samour.aoc2023.day7
 
 data class CardHand(
     val cards: List<Char>,
+    val usingWildcards: Boolean,
 ) : Comparable<CardHand> {
 
     private val cardsByFrequency: List<Pair<Char, Int>> by lazy {
@@ -14,22 +15,88 @@ data class CardHand(
             .map { (c, count) -> c to count }
     }
 
+    private val jokerCount: Int by lazy {
+        if (usingWildcards) {
+            cards.count { it == 'J' }
+        } else {
+            0
+        }
+    }
+
+    private val mostFrequent: Pair<Char, Int> by lazy {
+        if (cardsByFrequency.size > 1 && usingWildcards && cardsByFrequency.first().first == 'J') {
+            cardsByFrequency[1]
+        } else {
+            cardsByFrequency.first()
+        }
+    }
+
+    private val secondMostFrequent: Pair<Char, Int> by lazy {
+        if (cardsByFrequency.size == 1) {
+            'X' to 0
+        } else if (cardsByFrequency.size > 2 && usingWildcards && cardsByFrequency[1].first == 'J') {
+            cardsByFrequency[2]
+        } else {
+            cardsByFrequency[1]
+        }
+    }
+
     val handType: HandType by lazy {
-        if (cardsByFrequency.first().second == 5) {
+        if (isFiveOfKind()) {
             HandType.FIVE_OF_KIND
-        } else if (cardsByFrequency.first().second == 4) {
+        } else if (isFourOfKind()) {
             HandType.FOUR_OF_KIND
-        } else if (cardsByFrequency.first().second == 3 && cardsByFrequency[1].second == 2) {
+        } else if (isFullHouse()) {
             HandType.FULL_HOUSE
-        } else if (cardsByFrequency.first().second == 3) {
+        } else if (isThreeOfKind()) {
             HandType.THREE_OF_KIND
-        } else if (cardsByFrequency.first().second == 2 && cardsByFrequency[1].second == 2) {
+        } else if (isTwoPair()) {
             HandType.TWO_PAIR
-        } else if (cardsByFrequency.first().second == 2) {
+        } else if (isPair()) {
             HandType.PAIR
         } else {
             HandType.HIGH_CARD
         }
+    }
+
+    private fun isFiveOfKind(): Boolean {
+        return mostFrequent.second + jokerCount >= 5
+    }
+
+    private fun isFourOfKind(): Boolean {
+        return mostFrequent.second + jokerCount >= 4
+    }
+
+    private fun isFullHouse(): Boolean {
+        if (!isThreeOfKind()) {
+            return false
+        }
+
+        var remainingJokers = jokerCount
+        if (mostFrequent.second < 3) {
+            remainingJokers -= 3 - mostFrequent.second
+        }
+        return secondMostFrequent.second + remainingJokers >= 2
+    }
+
+    private fun isThreeOfKind(): Boolean {
+        return mostFrequent.second + jokerCount >= 3
+    }
+
+    private fun isTwoPair(): Boolean {
+        if (!isPair()) {
+            return false;
+        }
+
+        var remainingJokers = jokerCount
+        if (mostFrequent.second < 2) {
+            remainingJokers -= 2 - mostFrequent.second
+        }
+        return secondMostFrequent.second + remainingJokers >= 2
+    }
+
+    private fun isPair(): Boolean {
+        return mostFrequent.second + jokerCount >= 2
     }
 
     override fun compareTo(other: CardHand): Int {
@@ -47,6 +114,16 @@ data class CardHand(
 
         return 0
     }
+
+    private fun cardStrength(card: Char): Int =
+        when (card) {
+            'A' -> 14
+            'K' -> 13
+            'Q' -> 12
+            'J' -> if (usingWildcards) 1 else 11
+            'T' -> 10
+            else -> card.digitToInt()
+        }
 }
 
 enum class HandType(val strength: Int) {
@@ -58,13 +135,3 @@ enum class HandType(val strength: Int) {
     PAIR(2),
     HIGH_CARD(1),
 }
-
-private fun cardStrength(card: Char): Int =
-    when (card) {
-        'A' -> 14
-        'K' -> 13
-        'Q' -> 12
-        'J' -> 11
-        'T' -> 10
-        else -> card.digitToInt()
-    }
