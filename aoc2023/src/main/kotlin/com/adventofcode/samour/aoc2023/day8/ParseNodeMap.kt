@@ -13,7 +13,7 @@ fun BufferedReader.parseNodeMap(): NodeMap {
     )
 }
 
-private val nodeConnectionsPattern = "([a-zA-Z]+)\\s+=\\s+\\(([a-zA-Z]+),\\s+([a-zA-Z]+)\\)".toRegex()
+private val nodeConnectionsPattern = "([0-9a-zA-Z]+)\\s+=\\s+\\(([0-9a-zA-Z]+),\\s+([0-9a-zA-Z]+)\\)".toRegex()
 
 private fun parseNodeConnections(line: String): Pair<String, Pair<String, String>>? {
     val match = nodeConnectionsPattern.matchEntire(line.trim()) ?: return null

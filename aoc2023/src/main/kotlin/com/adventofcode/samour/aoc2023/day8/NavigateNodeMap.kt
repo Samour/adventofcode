@@ -1,20 +1,31 @@
 package com.adventofcode.samour.aoc2023.day8
 
-fun NodeMap.navigate(): List<String> {
+fun NodeMap.navigate(simulNavigate: Boolean): Int {
     var instruction = 0
-    var node = "AAA"
-    val route = mutableListOf<String>()
+    var node = if (simulNavigate) {
+        nodes.keys.filter { it.endsWith("A") }
+    } else {
+        listOf("AAA")
+    }
+    var steps = 0
 
-    while (node != "ZZZ") {
-        route.add(node)
-        node = when (instructions[instruction]) {
-            'L' -> nodes[node]!!.first
-            'R' -> nodes[node]!!.second
-            else -> throw Exception("Unknown instruction: ${instructions[instruction]}")
+    while (!node.isAtEnd(simulNavigate)) {
+        steps++
+        node = node.map {
+            when (instructions[instruction]) {
+                'L' -> nodes[it]!!.first
+                'R' -> nodes[it]!!.second
+                else -> throw Exception("Unknown instruction: ${instructions[instruction]}")
+            }
         }
         instruction = (instruction + 1) % instructions.size
     }
 
-    route.add(node)
-    return route
+    return steps
+}
+
+private fun List<String>.isAtEnd(simulNavigate: Boolean): Boolean = if (simulNavigate) {
+    all { it.endsWith("Z") }
+} else {
+    first() == "ZZZ"
 }
