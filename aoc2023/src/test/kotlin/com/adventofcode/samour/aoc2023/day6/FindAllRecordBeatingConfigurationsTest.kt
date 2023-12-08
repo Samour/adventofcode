@@ -34,9 +34,9 @@ class FindAllRecordBeatingConfigurationsTest {
     }
 
     @Test
-    fun `Should return X for sample dataset with single race`() {
+    fun `Should return 27102791 for sample dataset with single race`() {
         val result = findRecordBeatingConfigurationForSingleRace("data.txt")
 
-        assertThat(result).isEqualTo(BigInteger.ZERO)
+        assertThat(result).isEqualTo("27102791".toBigInteger())
     }
 }
