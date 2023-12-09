@@ -1,16 +1,25 @@
 package com.adventofcode.samour.aoc2023.day9
 
-fun nextValueInOasisSequence(sequence: List<Int>): Int {
+fun nextValueInOasisSequence(sequence: List<Int>, extrapolateBackwards: Boolean): Int {
     val differences = differencesSequences(listOf(sequence)).toMutableList()
-    var lastDifference = differences.removeLast().plusElement(0)
+    var lastDifference = differences.removeLast().attachNewValue(0, !extrapolateBackwards)
     while (differences.isNotEmpty()) {
         val currentDifference = differences.removeLast()
-        lastDifference = currentDifference.plusElement(
-            currentDifference.last() + lastDifference.last()
+        lastDifference = currentDifference.attachNewValue(
+            if (extrapolateBackwards) {
+                currentDifference.first() - lastDifference.first()
+            } else {
+                currentDifference.last() + lastDifference.last()
+            },
+            !extrapolateBackwards,
         )
     }
 
-    return lastDifference.last()
+    return if (extrapolateBackwards) {
+        lastDifference.first()
+    } else {
+        lastDifference.last()
+    }
 }
 
 private tailrec fun differencesSequences(priorSequences: List<List<Int>>): List<List<Int>> {
@@ -25,4 +34,10 @@ private tailrec fun differencesSequences(priorSequences: List<List<Int>>): List<
             },
         ),
     )
+}
+
+private fun List<Int>.attachNewValue(value: Int, addToEnd: Boolean): List<Int> = if (addToEnd) {
+    plusElement(value)
+} else {
+    listOf(value) + this
 }
