@@ -112,7 +112,7 @@ data class PipeSpec(
                     sectionType
                 }
             }
-        }
+        },
     )
 }
 
@@ -126,7 +126,8 @@ enum class SectionType {
     PIPE_JOIN_LU,
 
     NONE,
-    ANIMAL;
+    ANIMAL,
+    ;
 
     fun debugRender(): Char = when (this) {
         PIPE_VERTICAL -> '|'
@@ -188,5 +189,5 @@ data class ConnectionSpec(
 enum class PartiallySpecified {
     TRUE,
     FALSE,
-    MAYBE
+    MAYBE,
 }

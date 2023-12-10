@@ -28,8 +28,8 @@ fun traceAnimalLoop(map: PipeSpec): AnimalLoop {
         encounteredPositions.addAll(stepFrom)
         stepFrom = stepFrom.flatMap { (x, y) ->
             map.adjacentSections(x, y).filter {
-                it.section.sectionType != SectionType.ANIMAL && it.section.sectionType != SectionType.NONE
-                    && it.connects == PartiallySpecified.TRUE
+                it.section.sectionType != SectionType.ANIMAL && it.section.sectionType != SectionType.NONE &&
+                    it.connects == PartiallySpecified.TRUE
             }.map { it.section.x to it.section.y }
         }.filter { !encounteredPositions.contains(it) }
             .toSet()

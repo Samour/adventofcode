@@ -17,5 +17,5 @@ fun BufferedReader.parsePipeSpec(): PipeSpec = PipeSpec(
                 else -> throw IllegalArgumentException("Unknown character: $it")
             }
         }
-    }
+    },
 )
