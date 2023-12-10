@@ -18,16 +18,11 @@ fun traceAnimalLoop(map: PipeSpec): AnimalLoop {
 
     var steps = 0
     val encounteredPositions = mutableSetOf(startX to startY)
-    var stepFrom = setOf(
-        startX - 1 to startY,
-        startX + 1 to startY,
-        startX to startY - 1,
-        startX to startY + 1,
-    ).filter { (x, y) ->
-        map.rows.getOrNull(y)?.getOrNull(x).let {
-            it != null && PositionSpec(x, y, it).adjacentCoordinates().contains(startX to startY)
-        }
-    }.toSet()
+    var stepFrom = PositionSpec(
+        x = startX,
+        y = startY,
+        sectionType = map.inferSectionTypeOfAnimal(),
+    ).adjacentCoordinates()
 
     while (stepFrom.isNotEmpty()) {
         encounteredPositions.addAll(stepFrom)
