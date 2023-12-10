@@ -63,6 +63,57 @@ data class PipeSpec(
     fun debugRender(): String = rows.joinToString("\n") { row ->
         row.joinToString("") { "${it.debugRender()}" }
     }
+
+    fun inferSectionTypeOfAnimal(): SectionType {
+        val (animalX, animalY) = rows.flatMapIndexed { y, row ->
+            row.mapIndexed { x, sectionType ->
+                PositionSpec(
+                    x = x,
+                    y = y,
+                    sectionType = sectionType,
+                )
+            }
+        }.first { it.sectionType == SectionType.ANIMAL }
+
+        val connectedPositions = listOf(
+            animalX - 1 to animalY,
+            animalX + 1 to animalY,
+            animalX to animalY - 1,
+            animalX to animalY + 1,
+        ).filter { (x, y) ->
+            rows.getOrNull(y)?.getOrNull(x).let {
+                it != null && PositionSpec(x, y, it).adjacentCoordinates().contains(animalX to animalY)
+            }
+        }.toSet()
+
+        if (connectedPositions == setOf(animalX - 1 to animalY, animalX + 1 to animalY)) {
+            return SectionType.PIPE_HORIZONTAL
+        } else if (connectedPositions == setOf(animalX to animalY - 1, animalX to animalY + 1)) {
+            return SectionType.PIPE_VERTICAL
+        } else if (connectedPositions == setOf(animalX + 1 to animalY, animalX to animalY + 1)) {
+            return SectionType.PIPE_JOIN_RD
+        } else if (connectedPositions == setOf(animalX - 1 to animalY, animalX to animalY + 1)) {
+            return SectionType.PIPE_JOIN_LD
+        } else if (connectedPositions == setOf(animalX + 1 to animalY, animalX to animalY - 1)) {
+            return SectionType.PIPE_JOIN_RU
+        } else if (connectedPositions == setOf(animalX - 1 to animalY, animalX to animalY - 1)) {
+            return SectionType.PIPE_JOIN_LU
+        } else {
+            throw IllegalStateException("Cannot determine pipe type of animal position")
+        }
+    }
+
+    fun replaceAnimalByInference(): PipeSpec = PipeSpec(
+        rows = rows.mapIndexed { y, row ->
+            row.mapIndexed { x, sectionType ->
+                if (sectionType == SectionType.ANIMAL) {
+                    inferSectionTypeOfAnimal()
+                } else {
+                    sectionType
+                }
+            }
+        }
+    )
 }
 
 enum class SectionType {
