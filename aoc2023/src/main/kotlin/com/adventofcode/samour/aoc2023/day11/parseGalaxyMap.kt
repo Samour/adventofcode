@@ -1,8 +1,10 @@
 package com.adventofcode.samour.aoc2023.day11
 
 import java.io.BufferedReader
+import java.math.BigInteger
 
-fun BufferedReader.parseGalaxyMap(): GalaxyMap = GalaxyMap(
+fun BufferedReader.parseGalaxyMap(expansionFactor: BigInteger): GalaxyMap = GalaxyMap(
+    expansionFactor = expansionFactor,
     rows = readLines().map { line ->
         line.toCharArray().map {
             when (it) {
